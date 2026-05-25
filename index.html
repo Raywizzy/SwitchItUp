@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Switch It Up</title>
+    <meta name="description" content="Virtual wardrobe, stylist marketplace, and social fashion app prototype." />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">S</div>
+        <div><strong>Switch It Up</strong><span>Virtual styling</span></div>
+      </div>
+      <nav>
+        <a class="active" href="#studio">Style Studio</a>
+        <a href="#wardrobe">Wardrobe</a>
+        <a href="#stylists">Stylists</a>
+        <a href="#mall">Mall</a>
+        <a href="#social">Social</a>
+      </nav>
+      <div class="account-card">
+        <span>Signed in as</span>
+        <strong id="signedRole">Normal Person</strong>
+        <small>Virtual fit profile ready</small>
+      </div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <div>
+          <h1>Switch Up Your Look</h1>
+          <p>Build a virtual you, remix your wardrobe, ask stylists, shop wishlists, and post your fits.</p>
+        </div>
+        <div class="role-toggle" role="group" aria-label="Account type">
+          <button class="active" data-role="normal" type="button">Normal</button>
+          <button data-role="stylist" type="button">Stylist</button>
+        </div>
+        <button class="upgrade" id="upgradeBtn" type="button">Upgrade Stylist</button>
+      </header>
+
+      <section class="login-strip">
+        <div>
+          <strong>Profile setup</strong>
+          <span>Height 178 cm · Size M · Waist 32 · Shoe 10 UK</span>
+        </div>
+        <button type="button">Take Body Scan</button>
+        <button type="button">Upload Clothes</button>
+      </section>
+
+      <section class="grid" id="studio">
+        <section class="panel wardrobe" id="wardrobe">
+          <div class="panel-title"><h2>Your Wardrobe</h2><button id="addItem" type="button">Add Photo</button></div>
+          <div id="wardrobeGrid"></div>
+        </section>
+
+        <section class="panel avatar-panel">
+          <div class="panel-title"><h2>Virtual You</h2><span id="confidence">91% match</span></div>
+          <div class="avatar-stage">
+            <div class="avatar" aria-label="Virtual body outfit preview">
+              <div class="head"></div>
+              <div class="body">
+                <div class="shirt" id="avatarTop"></div>
+                <div class="trousers" id="avatarBottom"></div>
+                <div class="shoes" id="avatarShoes"></div>
+              </div>
+            </div>
+            <div class="outfit-list">
+              <strong>Selected fit</strong>
+              <ul id="selectedFit"></ul>
+              <button id="styleMe" type="button">Style Me</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel request">
+          <div class="panel-title"><h2>Ask A Stylist</h2><span id="paidBadge">Free or paid</span></div>
+          <label>Occasion <select id="occasion"><option>Smart casual dinner</option><option>Wedding guest</option><option>Concert</option><option>Interview</option></select></label>
+          <label>Budget <span><input id="budget" type="number" value="120" /> £</span></label>
+          <label>Replacement mode <select id="replaceMode"><option value="some">Replace some items</option><option value="all">Rebuild full outfit</option><option value="none">Use my wardrobe only</option></select></label>
+          <button id="askStylist" type="button">Send Styling Request</button>
+          <div class="request-output" id="requestOutput">A stylist can remix your wardrobe or send a mall wishlist.</div>
+        </section>
+
+        <section class="panel stylists" id="stylists">
+          <div class="panel-title"><h2>Stylist Marketplace</h2><span>Specialties</span></div>
+          <div id="stylistCards"></div>
+        </section>
+
+        <section class="panel mall" id="mall">
+          <div class="panel-title"><h2>Mall Wishlist</h2><button id="sendWishlist" type="button">Send Wishlist</button></div>
+          <div id="mallItems"></div>
+        </section>
+
+        <section class="panel social" id="social">
+          <div class="panel-title"><h2>Style Feed</h2><button type="button">Post Fit</button></div>
+          <div class="feed-card">
+            <div class="fit-photo"></div>
+            <div>
+              <strong>@tamilooks styled @ray</strong>
+              <p>Smart casual remix using wardrobe pieces plus one mall jacket.</p>
+              <span>248 likes · 39 comments · 18 saved</span>
+            </div>
+          </div>
+          <div class="competition">
+            <strong>Stylist Competition</strong>
+            <p>Prize pot £60 · 8 stylists entered · winner gets paid, runner-up can also be selected.</p>
+            <button type="button">Open Competition</button>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

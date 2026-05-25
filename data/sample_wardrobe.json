@@ -1,0 +1,8 @@
+[
+  {"name": "White Oxford Shirt", "category": "top", "color": "white", "formality": 4, "warmth": 1},
+  {"name": "Black Relaxed Tee", "category": "top", "color": "black", "formality": 2, "warmth": 1},
+  {"name": "Stone Chinos", "category": "bottom", "color": "stone", "formality": 4, "warmth": 2},
+  {"name": "Dark Denim", "category": "bottom", "color": "indigo", "formality": 2, "warmth": 2},
+  {"name": "White Trainers", "category": "shoes", "color": "white", "formality": 3, "warmth": 1},
+  {"name": "Navy Overshirt", "category": "jacket", "color": "navy", "formality": 3, "warmth": 3}
+]
