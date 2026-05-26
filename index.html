@@ -4,109 +4,288 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Switch It Up</title>
-    <meta name="description" content="Virtual wardrobe, stylist marketplace, and social fashion app prototype." />
+    <meta
+      name="description"
+      content="Premium virtual wardrobe, 360 avatar scan, stylist marketplace, mall wishlist, and social fashion app prototype."
+    />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <aside class="sidebar">
+    <aside class="sidebar" aria-label="Primary navigation">
       <div class="brand">
         <div class="brand-mark">S</div>
-        <div><strong>Switch It Up</strong><span>Virtual styling</span></div>
+        <div>
+          <strong>Switch It Up</strong>
+          <span>Style operating system</span>
+        </div>
       </div>
+
       <nav>
-        <a class="active" href="#studio">Style Studio</a>
-        <a href="#wardrobe">Wardrobe</a>
-        <a href="#stylists">Stylists</a>
-        <a href="#mall">Mall</a>
-        <a href="#social">Social</a>
+        <a class="active" href="#studio"><span class="nav-icon" aria-hidden="true">⌘</span>Studio</a>
+        <a href="#wardrobe"><span class="nav-icon" aria-hidden="true">◌</span>Wardrobe</a>
+        <a href="#stylists"><span class="nav-icon" aria-hidden="true">◎</span>Stylists</a>
+        <a href="#mall"><span class="nav-icon" aria-hidden="true">□</span>Mall</a>
+        <a href="#social"><span class="nav-icon" aria-hidden="true">♡</span>Social</a>
+        <a href="#competitions"><span class="nav-icon" aria-hidden="true">♕</span>Competitions</a>
       </nav>
-      <div class="account-card">
-        <span>Signed in as</span>
+
+      <section class="pro-card">
+        <strong>Pro Styling</strong>
+        <p>Paid stylist requests, competitions, portfolio proof, and mall partnerships.</p>
+        <button type="button">Upgrade now</button>
+      </section>
+
+      <section class="mini-profile">
+        <span>Active account</span>
         <strong id="signedRole">Normal Person</strong>
-        <small>Virtual fit profile ready</small>
-      </div>
+        <small>Private fit profile · London</small>
+      </section>
     </aside>
 
     <main>
       <header class="topbar">
         <div>
-          <h1>Switch Up Your Look</h1>
+          <h1>Switch up your look</h1>
           <p>Build a virtual you, remix your wardrobe, ask stylists, shop wishlists, and post your fits.</p>
         </div>
-        <div class="role-toggle" role="group" aria-label="Account type">
-          <button class="active" data-role="normal" type="button">Normal</button>
-          <button data-role="stylist" type="button">Stylist</button>
+        <div class="top-actions">
+          <div class="role-toggle" role="group" aria-label="Choose account type">
+            <button class="active" data-role="normal" type="button">Normal</button>
+            <button data-role="stylist" type="button">Stylist</button>
+          </div>
+          <button class="icon-button" type="button" aria-label="Notifications">
+            <span aria-hidden="true">⌁</span>
+            <b>3</b>
+          </button>
+          <button class="profile-chip" type="button" aria-label="Account menu">
+            <span class="profile-photo" aria-hidden="true"></span>
+            <span><strong>Raymond</strong><small>Style Explorer</small></span>
+          </button>
+          <button class="upgrade" id="upgradeBtn" type="button">Upgrade</button>
         </div>
-        <button class="upgrade" id="upgradeBtn" type="button">Upgrade Stylist</button>
       </header>
 
-      <section class="login-strip">
-        <div>
-          <strong>Profile setup</strong>
-          <span>Height 178 cm · Size M · Waist 32 · Shoe 10 UK</span>
-        </div>
-        <button type="button">Take Body Scan</button>
-        <button type="button">Upload Clothes</button>
+      <section class="progress-panel" aria-label="Onboarding progress">
+        <div class="step done"><span>1</span><strong>Sign in</strong><small>Complete</small></div>
+        <div class="step done"><span>2</span><strong>Measurements</strong><small>178 cm · M · UK 10</small></div>
+        <div class="step active" id="scanStep"><span>3</span><strong>360 scan</strong><small id="scanStatus">Ready to capture</small></div>
+        <div class="step done"><span>4</span><strong>Wardrobe</strong><small>6 items</small></div>
+        <div class="step"><span>5</span><strong>Stylist request</strong><small id="requestStatus">Not sent</small></div>
       </section>
 
-      <section class="grid" id="studio">
-        <section class="panel wardrobe" id="wardrobe">
-          <div class="panel-title"><h2>Your Wardrobe</h2><button id="addItem" type="button">Add Photo</button></div>
-          <div id="wardrobeGrid"></div>
+      <section class="studio-grid" id="studio">
+        <section class="surface wardrobe-panel" id="wardrobe">
+          <div class="surface-title">
+            <div>
+              <h2>Wardrobe rail</h2>
+              <p><span id="wardrobeCount">6</span> photographed pieces</p>
+            </div>
+            <button id="addItem" type="button">Add photo</button>
+          </div>
+          <div class="filter-row" aria-label="Wardrobe filters">
+            <button class="active" type="button">All</button>
+            <button type="button">Tops</button>
+            <button type="button">Bottoms</button>
+            <button type="button">Shoes</button>
+          </div>
+          <div id="wardrobeGrid" class="wardrobe-list"></div>
         </section>
 
-        <section class="panel avatar-panel">
-          <div class="panel-title"><h2>Virtual You</h2><span id="confidence">91% match</span></div>
+        <section class="surface avatar-panel">
+          <div class="surface-title">
+            <div>
+              <h2>Virtual you</h2>
+              <p>Body scan estimate and live outfit layers</p>
+            </div>
+            <span id="confidence">91% fit confidence</span>
+          </div>
+          <div class="scan-toolbar">
+            <button id="captureScan" type="button">Capture 360</button>
+            <div class="measurement-chips">
+              <span>178 cm</span>
+              <span>Size M</span>
+              <span>Waist 32</span>
+              <span>Shoe UK 10</span>
+            </div>
+          </div>
           <div class="avatar-stage">
-            <div class="avatar" aria-label="Virtual body outfit preview">
-              <div class="head"></div>
-              <div class="body">
-                <div class="shirt" id="avatarTop"></div>
-                <div class="trousers" id="avatarBottom"></div>
-                <div class="shoes" id="avatarShoes"></div>
+            <div class="avatar-shell" aria-label="Virtual body outfit preview">
+              <div class="scan-ring"></div>
+              <div class="layer-stack" aria-label="Outfit layers">
+                <article>
+                  <small>Outer</small>
+                  <span class="layer-thumb jacket"></span>
+                </article>
+                <article>
+                  <small>Top</small>
+                  <span class="layer-thumb shirt"></span>
+                </article>
+                <article>
+                  <small>Bottom</small>
+                  <span class="layer-thumb trouser"></span>
+                </article>
+                <article>
+                  <small>Shoes</small>
+                  <span class="layer-thumb shoe"></span>
+                </article>
+              </div>
+              <div class="avatar">
+                <div class="avatar-head"></div>
+                <div class="avatar-neck"></div>
+                <div class="avatar-torso" id="avatarTop"></div>
+                <div class="avatar-jacket" id="avatarJacket"></div>
+                <div class="avatar-leg left" id="avatarLeftLeg"></div>
+                <div class="avatar-leg right" id="avatarRightLeg"></div>
+                <div class="avatar-shoe left-shoe" id="avatarLeftShoe"></div>
+                <div class="avatar-shoe right-shoe" id="avatarRightShoe"></div>
+              </div>
+              <div class="studio-actions" aria-label="Virtual avatar actions">
+                <button type="button" aria-label="Change pose">⌁</button>
+                <button type="button" aria-label="Save look">♡</button>
+                <button type="button" aria-label="Share look">↥</button>
+                <button type="button" aria-label="Fullscreen">⛶</button>
+              </div>
+              <div class="measurement-dock">
+                <div><small>Height</small><strong>178 cm</strong></div>
+                <div><small>Size</small><strong>M</strong></div>
+                <div><small>Waist</small><strong>32 in</strong></div>
+                <div><small>Shoe</small><strong>UK 10</strong></div>
+                <div><small>Scan quality</small><strong id="scanQuality">91% match</strong></div>
               </div>
             </div>
-            <div class="outfit-list">
+            <aside class="outfit-stack">
               <strong>Selected fit</strong>
               <ul id="selectedFit"></ul>
-              <button id="styleMe" type="button">Style Me</button>
-            </div>
+              <button id="styleMe" type="button">Style me</button>
+            </aside>
           </div>
         </section>
 
-        <section class="panel request">
-          <div class="panel-title"><h2>Ask A Stylist</h2><span id="paidBadge">Free or paid</span></div>
-          <label>Occasion <select id="occasion"><option>Smart casual dinner</option><option>Wedding guest</option><option>Concert</option><option>Interview</option></select></label>
-          <label>Budget <span><input id="budget" type="number" value="120" /> £</span></label>
-          <label>Replacement mode <select id="replaceMode"><option value="some">Replace some items</option><option value="all">Rebuild full outfit</option><option value="none">Use my wardrobe only</option></select></label>
-          <button id="askStylist" type="button">Send Styling Request</button>
-          <div class="request-output" id="requestOutput">A stylist can remix your wardrobe or send a mall wishlist.</div>
+        <section class="surface request-panel">
+          <div class="surface-title">
+            <div>
+              <h2>Stylist request</h2>
+              <p>Free help or paid specialist styling</p>
+            </div>
+            <span id="paidBadge">Free or paid</span>
+          </div>
+          <label>
+            Occasion
+            <select id="occasion">
+              <option>Smart casual dinner</option>
+              <option>Wedding guest</option>
+              <option>Concert</option>
+              <option>Interview</option>
+              <option>Holiday wardrobe</option>
+            </select>
+          </label>
+          <label>
+            Budget
+            <span class="money-field"><input id="budget" type="number" value="120" min="0" /> GBP</span>
+          </label>
+          <label>
+            Replacement mode
+            <select id="replaceMode">
+              <option value="some">Replace some items</option>
+              <option value="all">Rebuild full outfit</option>
+              <option value="none">Use my wardrobe only</option>
+            </select>
+          </label>
+          <label>
+            Preferred delivery
+            <select id="delivery">
+              <option>Within 24 hours</option>
+              <option>Within 2 hours</option>
+              <option>This weekend</option>
+            </select>
+          </label>
+          <div class="stylist-tier" aria-label="Stylist pricing">
+            <button class="active" type="button"><strong>Free Stylists</strong><span>GBP 0</span></button>
+            <button type="button"><strong>Pro Stylists</strong><span>From GBP 5</span></button>
+          </div>
+          <label class="inline-toggle">
+            <input id="paidToggle" type="checkbox" checked />
+            <span>Allow paid stylist offers</span>
+          </label>
+          <button id="askStylist" type="button">Ask a stylist</button>
+          <div class="request-output" id="requestOutput">
+            A stylist can remix your wardrobe, replace selected pieces, or send a mall wishlist.
+          </div>
+        </section>
+      </section>
+
+      <section class="lower-grid">
+        <section class="surface stylists" id="stylists">
+          <div class="surface-title">
+            <div>
+              <h2>Stylist marketplace</h2>
+              <p>Search by specialty, proof, price, and helped clients</p>
+            </div>
+            <button type="button">Browse all</button>
+          </div>
+          <div id="stylistCards" class="stylist-grid"></div>
         </section>
 
-        <section class="panel stylists" id="stylists">
-          <div class="panel-title"><h2>Stylist Marketplace</h2><span>Specialties</span></div>
-          <div id="stylistCards"></div>
+        <section class="surface mall" id="mall">
+          <div class="surface-title">
+            <div>
+              <h2>Mall wishlist</h2>
+              <p>Suggested pieces from registered shops</p>
+            </div>
+            <button id="sendWishlist" type="button">Send wishlist</button>
+          </div>
+          <div id="mallItems" class="mall-list"></div>
         </section>
 
-        <section class="panel mall" id="mall">
-          <div class="panel-title"><h2>Mall Wishlist</h2><button id="sendWishlist" type="button">Send Wishlist</button></div>
-          <div id="mallItems"></div>
-        </section>
-
-        <section class="panel social" id="social">
-          <div class="panel-title"><h2>Style Feed</h2><button type="button">Post Fit</button></div>
-          <div class="feed-card">
+        <section class="surface social" id="social">
+          <div class="surface-title">
+            <div>
+              <h2>Style feed</h2>
+              <p>Posts, proof, likes, comments, and stylist reputation</p>
+            </div>
+            <button type="button">Post fit</button>
+          </div>
+          <article class="feed-card">
             <div class="fit-photo"></div>
             <div>
               <strong>@tamilooks styled @ray</strong>
-              <p>Smart casual remix using wardrobe pieces plus one mall jacket.</p>
-              <span>248 likes · 39 comments · 18 saved</span>
+              <p>Smart casual remix using wardrobe pieces plus one mall jacket. Saved as “Friday dinner”.</p>
+              <span>248 likes · 39 comments · 18 saves · 12 booking requests</span>
             </div>
+          </article>
+        </section>
+
+        <section class="surface competition" id="competitions">
+          <div class="surface-title">
+            <div>
+              <h2>Styling competition</h2>
+              <p>Invite multiple stylists, pick one or more winners, and pay through escrow.</p>
+            </div>
+            <span>Prize pot GBP 60</span>
           </div>
-          <div class="competition">
-            <strong>Stylist Competition</strong>
-            <p>Prize pot £60 · 8 stylists entered · winner gets paid, runner-up can also be selected.</p>
-            <button type="button">Open Competition</button>
+          <div class="competition-row">
+            <div><strong>8</strong><span>stylists entered</span></div>
+            <div><strong>2</strong><span>winners allowed</span></div>
+            <div><strong>18h</strong><span>left to submit</span></div>
+            <button type="button">Open competition</button>
+          </div>
+        </section>
+
+        <section class="surface readiness">
+          <div class="surface-title">
+            <div>
+              <h2>Production path</h2>
+              <p>Core services needed before public launch</p>
+            </div>
+            <span>Roadmap</span>
+          </div>
+          <div class="readiness-list">
+            <span>Auth</span>
+            <span>Encrypted media storage</span>
+            <span>Payments and escrow</span>
+            <span>Camera body-scan service</span>
+            <span>Catalog APIs</span>
+            <span>Moderation</span>
           </div>
         </section>
       </section>

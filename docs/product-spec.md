@@ -19,6 +19,12 @@
 9. Users post outfits, like, comment, message, and follow stylists.
 10. Users can open paid competitions for multiple stylists.
 
+## Frontend MVP Scope
+
+- Responsive app shell with dark navigation rail, setup progress, wardrobe rail, virtual styling canvas, stylist request form, stylist marketplace, mall wishlist, social feed, and competition panel.
+- Local demo state for role switching, wardrobe filtering, adding wardrobe photos, applying clothes to the virtual body, marking 360 scan captured, sending stylist requests, and accepting/discarding wishlist items.
+- Screenshots are stored in `assets/screenshots/dashboard.png` and `assets/screenshots/mobile-dashboard.png`.
+
 ## Future Integrations
 
 - Camera/body scan

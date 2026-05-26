@@ -15,6 +15,9 @@ The app idea:
 
 ## MVP Features
 
+- Production-style responsive frontend shell
+- Apple-inspired glass app layout with sidebar, setup progress, virtual styling canvas, and compact controls
+- Interactive wardrobe filters, selected fit state, 360 scan completion state, and stylist request state
 - Normal/stylist account toggle
 - Wardrobe photo-card simulation
 - Virtual-you outfit preview
@@ -53,4 +56,4 @@ PYTHONPATH=. python3 tools/export_sample_report.py
 
 ## Production Notes
 
-A real production version would need consent-based body image capture, secure photo storage, product catalog integrations, payments, identity verification for stylists and malls, moderation, privacy controls, and clear AI safety rules.
+The current app is a functional frontend MVP with local demo state. A real production version would need consent-based body image capture, secure photo storage, product catalog integrations, payments, identity verification for stylists and malls, moderation, privacy controls, and clear AI safety rules.
