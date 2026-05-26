@@ -22,11 +22,21 @@
 ## Frontend MVP Scope
 
 - Responsive app shell with dark navigation rail, setup progress, wardrobe rail, virtual styling canvas, stylist request form, stylist marketplace, mall wishlist, social feed, and competition panel.
-- Local demo state for role switching, wardrobe filtering, adding wardrobe photos, applying clothes to the virtual body, marking 360 scan captured, sending stylist requests, and accepting/discarding wishlist items.
+- Backend-aware UI for role switching, wardrobe filtering, adding wardrobe photos, applying clothes to the virtual body, marking 360 scan captured, sending stylist requests, and accepting/discarding wishlist items.
 - Screenshots are stored in `assets/screenshots/dashboard.png` and `assets/screenshots/mobile-dashboard.png`.
+
+## Backend MVP Scope
+
+- `server.py` runs the static frontend and API from one local server.
+- `src/backend.py` stores app data in `data/app_state.json` and exposes service methods for profile role, wardrobe, selected outfit, scan capture, style requests, and wishlist decisions.
+- The backend reuses the rule-based style engine to create real outfit plans from the saved wardrobe.
+- GitHub Pages still works as a static frontend and falls back to demo state when `/api/state` is unavailable.
 
 ## Future Integrations
 
+- Managed database
+- Real authentication and sessions
+- Object storage for wardrobe photos and scan videos
 - Camera/body scan
 - Guided 360 body video capture for avatar generation and outfit sizing
 - Clothing segmentation

@@ -22,6 +22,7 @@ The app idea:
 - Wardrobe photo-card simulation
 - Virtual-you outfit preview
 - Style request workflow
+- Local JSON backend API with persistent wardrobe, scan, role, style request, and wishlist state
 - Stylist marketplace cards
 - Mall wishlist panel
 - Social proof feed
@@ -31,6 +32,20 @@ The app idea:
 - GitHub Pages demo
 
 ## Run
+
+Full app with backend:
+
+```bash
+python3 server.py
+```
+
+Open:
+
+```text
+http://127.0.0.1:5180
+```
+
+Static frontend only:
 
 ```bash
 python3 -m http.server 5180
@@ -48,6 +63,18 @@ http://127.0.0.1:5180
 python3 -m unittest discover -s tests -v
 ```
 
+## API
+
+- `GET /api/health`
+- `GET /api/state`
+- `POST /api/profile/role`
+- `POST /api/wardrobe`
+- `POST /api/outfit/select`
+- `POST /api/scan`
+- `POST /api/style-requests`
+- `POST /api/wishlist`
+- `POST /api/reset`
+
 ## Export Report
 
 ```bash
@@ -56,4 +83,4 @@ PYTHONPATH=. python3 tools/export_sample_report.py
 
 ## Production Notes
 
-The current app is a functional frontend MVP with local demo state. A real production version would need consent-based body image capture, secure photo storage, product catalog integrations, payments, identity verification for stylists and malls, moderation, privacy controls, and clear AI safety rules.
+The current app is a functional full-stack MVP with a local JSON backend. A real public production version would replace the JSON store with a managed database, add consent-based body image capture, secure photo storage, product catalog integrations, payments, identity verification for stylists and malls, moderation, privacy controls, and clear AI safety rules.

@@ -886,6 +886,14 @@ h1 {
   font-size: 13px;
   font-weight: 850;
 }
+.readiness-list #apiStatus {
+  background: #fff7ed;
+  color: #8b4a00;
+}
+.readiness-list #apiStatus.live {
+  background: #e8fff4;
+  color: var(--success);
+}
 
 @media (max-width: 1280px) {
   .studio-grid { grid-template-columns: minmax(310px, .9fr) 1.35fr; }
