@@ -28,21 +28,23 @@
 ## Backend MVP Scope
 
 - `server.py` runs the static frontend and API from one local server.
-- `src/backend.py` stores app data in `data/app_state.json` and exposes service methods for profile role, wardrobe, selected outfit, scan capture, style requests, and wishlist decisions.
+- `src/backend.py` stores app data in `data/app_state.json` and exposes service methods for profile role, measurements, wardrobe, selected outfit, scan capture, style requests, wishlist decisions, stylist upgrades, social posts/reactions, direct messages, mall registration, competitions, competition entries, and stylist follows.
 - The backend reuses the rule-based style engine to create real outfit plans from the saved wardrobe.
+- Uploads are saved under `data/uploads/` after type, size, base64, and image signature validation.
+- The local API applies request-size limits, schema migration, atomic JSON writes, and local security headers.
 - GitHub Pages still works as a static frontend and falls back to demo state when `/api/state` is unavailable.
 
 ## Future Integrations
 
 - Managed database
-- Real authentication and sessions
+- Real authentication, sessions, and account isolation
 - Object storage for wardrobe photos and scan videos
 - Camera/body scan
 - Guided 360 body video capture for avatar generation and outfit sizing
 - Clothing segmentation
 - Product catalog APIs
 - Payments and escrow
-- Messaging
+- Production messaging and notifications
 - Moderation
 - Creator analytics
 

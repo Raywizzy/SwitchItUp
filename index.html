@@ -32,7 +32,7 @@
       <section class="pro-card">
         <strong>Pro Styling</strong>
         <p>Paid stylist requests, competitions, portfolio proof, and mall partnerships.</p>
-        <button type="button">Upgrade now</button>
+        <button id="sidebarUpgrade" type="button">Upgrade now</button>
       </section>
 
       <section class="mini-profile">
@@ -270,18 +270,9 @@
               <h2>Style feed</h2>
               <p>Posts, proof, likes, comments, and stylist reputation</p>
             </div>
-            <button type="button">Post fit</button>
+            <button id="postFit" type="button">Post fit</button>
           </div>
-          <article class="feed-card">
-            <div class="fit-photo">
-              <img src="assets/photos/style-feed.jpg" alt="Styled smart casual outfit" loading="lazy" />
-            </div>
-            <div>
-              <strong>@tamilooks styled @ray</strong>
-              <p>Smart casual remix using wardrobe pieces plus one mall jacket. Saved as “Friday dinner”.</p>
-              <span>248 likes · 39 comments · 18 saves · 12 booking requests</span>
-            </div>
-          </article>
+          <div id="feedList"></div>
         </section>
 
         <section class="surface competition" id="competitions">
@@ -290,14 +281,9 @@
               <h2>Styling competition</h2>
               <p>Invite multiple stylists, pick one or more winners, and pay through escrow.</p>
             </div>
-            <span>Prize pot GBP 60</span>
+            <span id="competitionPrize">Prize pot GBP 60</span>
           </div>
-          <div class="competition-row">
-            <div><strong>8</strong><span>stylists entered</span></div>
-            <div><strong>2</strong><span>winners allowed</span></div>
-            <div><strong>18h</strong><span>left to submit</span></div>
-            <button type="button">Open competition</button>
-          </div>
+          <div id="competitionRows"></div>
         </section>
 
         <section class="surface readiness">

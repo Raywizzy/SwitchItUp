@@ -14,6 +14,7 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 import re
+from threading import RLock
 from typing import Any
 from uuid import uuid4
 
@@ -22,6 +23,14 @@ from src.style_engine import StyleRequest, WardrobeItem, build_style_plan, sampl
 
 VALID_ROLES = {"normal", "stylist"}
 VALID_WISHLIST_ACTIONS = {"accept", "discard"}
+VALID_WARDROBE_CATEGORIES = {"top", "bottom", "shoes", "jacket", "accessory"}
+VALID_REPLACE_MODES = {"some", "all", "none"}
+VALID_DELIVERIES = {"Within 24 hours", "Within 2 hours", "This weekend"}
+VALID_STYLIST_PLANS = {"pro_monthly", "pro_annual", "founding_stylist"}
+VALID_SOCIAL_ACTIONS = {"like", "save", "comment", "booking"}
+VALID_FOLLOW_ACTIONS = {"follow", "unfollow"}
+VALID_MALL_PLANS = {"starter", "pro", "enterprise"}
+MAX_UPLOAD_BYTES = 6 * 1024 * 1024
 
 
 class BackendError(ValueError):
@@ -234,8 +243,15 @@ def default_state() -> dict[str, Any]:
         ],
         "styleRequests": [],
         "wishlistEvents": [],
+        "messages": [],
+        "stylistApplications": [],
+        "mallRegistrations": [],
+        "competitionEntries": [],
+        "followers": [],
+        "postComments": [],
         "posts": [
             {
+                "id": "post_0001",
                 "author": "@tamilooks",
                 "subject": "@ray",
                 "caption": "Smart casual remix using wardrobe pieces plus one mall jacket. Saved as Friday dinner.",
@@ -248,6 +264,7 @@ def default_state() -> dict[str, Any]:
         ],
         "competitions": [
             {
+                "id": "competition_0001",
                 "name": "Weekend City Vibes",
                 "prize": 60,
                 "stylistsEntered": 8,
@@ -261,27 +278,50 @@ def default_state() -> dict[str, Any]:
 class JsonStore:
     def __init__(self, path: Path) -> None:
         self.path = path
+        self._lock = RLock()
 
     def load(self) -> dict[str, Any]:
-        if not self.path.exists():
-            state = default_state()
-            self.save(state)
-            return state
-        with self.path.open("r", encoding="utf-8") as handle:
-            return json.load(handle)
+        with self._lock:
+            if not self.path.exists():
+                state = default_state()
+                self.save(state)
+                return state
+            with self.path.open("r", encoding="utf-8") as handle:
+                state = json.load(handle)
+            migrated = self._merge_defaults(state)
+            if migrated != state:
+                self.save(migrated)
+            return migrated
 
     def save(self, state: dict[str, Any]) -> None:
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        temp_path = self.path.with_suffix(".tmp")
-        with temp_path.open("w", encoding="utf-8") as handle:
-            json.dump(state, handle, indent=2)
-            handle.write("\n")
-        temp_path.replace(self.path)
+        with self._lock:
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            temp_path = self.path.with_suffix(".tmp")
+            with temp_path.open("w", encoding="utf-8") as handle:
+                json.dump(state, handle, indent=2)
+                handle.write("\n")
+            temp_path.replace(self.path)
 
     def reset(self) -> dict[str, Any]:
         state = default_state()
         self.save(state)
         return state
+
+    def _merge_defaults(self, state: dict[str, Any]) -> dict[str, Any]:
+        merged = deepcopy(default_state())
+        self._deep_update(merged, state)
+        for index, post in enumerate(merged.get("posts", []), start=1):
+            post.setdefault("id", f"post_{index:04d}")
+        for index, competition in enumerate(merged.get("competitions", []), start=1):
+            competition.setdefault("id", f"competition_{index:04d}")
+        return merged
+
+    def _deep_update(self, base: dict[str, Any], override: dict[str, Any]) -> None:
+        for key, value in override.items():
+            if isinstance(value, dict) and isinstance(base.get(key), dict):
+                self._deep_update(base[key], value)
+            else:
+                base[key] = value
 
 
 class SwitchItUpBackend:
@@ -302,10 +342,85 @@ class SwitchItUpBackend:
         self.store.save(state)
         return {"profile": state["profile"]}
 
+    def update_measurements(self, payload: dict[str, Any]) -> dict[str, Any]:
+        state = self.store.load()
+        current = dict(state["profile"].get("measurements", {}))
+        if "heightCm" in payload:
+            current["heightCm"] = self._int_range(payload["heightCm"], "heightCm", 90, 230)
+        if "waistIn" in payload:
+            current["waistIn"] = self._int_range(payload["waistIn"], "waistIn", 20, 60)
+        if "topSize" in payload:
+            current["topSize"] = self._text(payload["topSize"], "topSize", min_len=1, max_len=12)
+        if "shoeSize" in payload:
+            current["shoeSize"] = self._text(payload["shoeSize"], "shoeSize", min_len=1, max_len=16)
+        state["profile"]["measurements"] = current
+        self.store.save(state)
+        return {"profile": state["profile"]}
+
+    def upgrade_stylist_account(self, payload: dict[str, Any]) -> dict[str, Any]:
+        specialty = self._text(payload.get("specialty", "Personal styling"), "specialty", min_len=3, max_len=90)
+        plan = str(payload.get("plan", "pro_monthly"))
+        if plan not in VALID_STYLIST_PLANS:
+            raise BackendError("stylist plan is invalid")
+        state = self.store.load()
+        state["profile"]["role"] = "stylist"
+        application = next(
+            (
+                entry
+                for entry in state["stylistApplications"]
+                if entry.get("accountId") == state["profile"]["id"] and entry.get("status") == "active"
+            ),
+            None,
+        )
+        if application:
+            application.update(
+                {
+                    "updatedAt": utc_now(),
+                    "specialty": specialty,
+                    "plan": plan,
+                    "paymentReference": str(payload.get("paymentReference", application.get("paymentReference", "")))[:80],
+                }
+            )
+        else:
+            application = {
+                "id": self._next_id(state["stylistApplications"], "stylist_application"),
+                "createdAt": utc_now(),
+                "accountId": state["profile"]["id"],
+                "specialty": specialty,
+                "plan": plan,
+                "status": "active",
+                "paymentStatus": "required",
+                "paymentReference": str(payload.get("paymentReference", "demo_checkout_pending"))[:80],
+            }
+            state["stylistApplications"].append(application)
+        marketplace_name = state["profile"]["name"]
+        marketplace_stylist = next(
+            (stylist for stylist in state["stylists"] if stylist["name"].lower() == marketplace_name.lower()),
+            None,
+        )
+        if marketplace_stylist:
+            marketplace_stylist["specialty"] = specialty
+            marketplace_stylist["paid"] = True
+        else:
+            state["stylists"].append(
+                {
+                    "name": marketplace_name,
+                    "specialty": specialty,
+                    "rating": 5.0,
+                    "helped": 0,
+                    "paid": True,
+                    "avatar": "linear-gradient(145deg,#111827,#4b5563 55%,#dbeafe 56%)",
+                    "photo": "assets/photos/avatar-model.jpg",
+                }
+            )
+        self.store.save(state)
+        return {"profile": state["profile"], "application": application, "stylists": state["stylists"]}
+
     def add_wardrobe_item(self, payload: dict[str, Any]) -> dict[str, Any]:
         item = payload.get("item", payload)
         if not isinstance(item, dict):
             raise BackendError("wardrobe item must be an object")
+        item = dict(item)
         photo_data = item.pop("photoData", None)
         if photo_data:
             item["photo"] = self._save_uploaded_photo(str(photo_data), str(item.get("photoName", item.get("name", "wardrobe"))))
@@ -344,10 +459,14 @@ class SwitchItUpBackend:
 
     def create_style_request(self, payload: dict[str, Any]) -> dict[str, Any]:
         state = self.store.load()
-        occasion = str(payload.get("occasion", "Smart casual dinner")).strip()
-        budget = float(payload.get("budget", 0))
+        occasion = self._text(payload.get("occasion", "Smart casual dinner"), "occasion", min_len=3, max_len=80)
+        budget = self._float_range(payload.get("budget", 0), "budget", 0, 10000)
         replace_mode = str(payload.get("replaceMode", "some"))
+        if replace_mode not in VALID_REPLACE_MODES:
+            raise BackendError("replaceMode must be some, all, or none")
         delivery = str(payload.get("delivery", "Within 24 hours"))
+        if delivery not in VALID_DELIVERIES:
+            raise BackendError("delivery option is invalid")
         paid_allowed = bool(payload.get("paidAllowed", True))
         target_formality = self._target_formality(occasion)
         open_to_replacements = replace_mode != "none"
@@ -397,6 +516,160 @@ class SwitchItUpBackend:
             "confidence": plan.confidence_percent,
         }
 
+    def create_post(self, payload: dict[str, Any]) -> dict[str, Any]:
+        state = self.store.load()
+        caption = self._text(payload.get("caption", ""), "caption", min_len=3, max_len=280)
+        author = str(payload.get("author") or f"@{state['profile']['name'].lower()}").strip()[:40]
+        post = {
+            "id": self._next_id(state["posts"], "post"),
+            "createdAt": utc_now(),
+            "author": author,
+            "subject": str(payload.get("subject", "@ray"))[:40],
+            "caption": caption,
+            "likes": 0,
+            "comments": 0,
+            "saves": 0,
+            "bookingRequests": 0,
+            "photo": str(payload.get("photo", "assets/photos/style-feed.jpg"))[:160],
+        }
+        state["posts"].insert(0, post)
+        self.store.save(state)
+        return {"post": post, "posts": state["posts"]}
+
+    def react_to_post(self, payload: dict[str, Any]) -> dict[str, Any]:
+        action = str(payload.get("action", ""))
+        if action not in VALID_SOCIAL_ACTIONS:
+            raise BackendError("social action must be like, save, comment, or booking")
+        state = self.store.load()
+        post = self._find_post(state, str(payload.get("postId", "")))
+        comment = None
+        if action == "comment":
+            text = self._text(payload.get("text", ""), "comment text", min_len=1, max_len=240)
+            post["comments"] = int(post.get("comments", 0)) + 1
+            comment = {
+                "id": self._next_id(state["postComments"], "comment"),
+                "postId": post["id"],
+                "author": str(payload.get("author", "@ray"))[:40],
+                "text": text,
+                "createdAt": utc_now(),
+            }
+            state["postComments"].append(comment)
+        elif action == "like":
+            post["likes"] = int(post.get("likes", 0)) + 1
+        elif action == "save":
+            post["saves"] = int(post.get("saves", 0)) + 1
+        elif action == "booking":
+            post["bookingRequests"] = int(post.get("bookingRequests", 0)) + 1
+        self.store.save(state)
+        return {"post": post, "comment": comment}
+
+    def send_message(self, payload: dict[str, Any]) -> dict[str, Any]:
+        recipient = self._text(payload.get("to", ""), "message recipient", min_len=2, max_len=80)
+        text = self._text(payload.get("text", ""), "message text", min_len=1, max_len=1000)
+        state = self.store.load()
+        message = {
+            "id": self._next_id(state["messages"], "message"),
+            "createdAt": utc_now(),
+            "from": str(payload.get("from", "@ray"))[:40],
+            "to": recipient,
+            "text": text,
+            "requestId": str(payload.get("requestId", ""))[:80],
+            "read": False,
+        }
+        state["messages"].append(message)
+        self.store.save(state)
+        return {"message": message, "messages": state["messages"]}
+
+    def register_mall(self, payload: dict[str, Any]) -> dict[str, Any]:
+        company_name = self._text(payload.get("companyName", ""), "companyName", min_len=2, max_len=90)
+        contact_email = self._email(payload.get("contactEmail", ""))
+        plan = str(payload.get("plan", "starter"))
+        if plan not in VALID_MALL_PLANS:
+            raise BackendError("mall registration plan is invalid")
+        state = self.store.load()
+        registration = {
+            "id": self._next_id(state["mallRegistrations"], "mall_registration"),
+            "createdAt": utc_now(),
+            "companyName": company_name,
+            "contactEmail": contact_email,
+            "plan": plan,
+            "status": "pending_verification",
+            "paymentStatus": "required",
+        }
+        state["mallRegistrations"].append(registration)
+        self.store.save(state)
+        return {"registration": registration}
+
+    def create_competition(self, payload: dict[str, Any]) -> dict[str, Any]:
+        state = self.store.load()
+        competition = {
+            "id": self._next_id(state["competitions"], "competition"),
+            "createdAt": utc_now(),
+            "name": self._text(payload.get("name", "New styling challenge"), "competition name", min_len=3, max_len=80),
+            "prize": self._float_range(payload.get("prize", 0), "prize", 1, 10000),
+            "stylistsEntered": 0,
+            "winnersAllowed": self._int_range(payload.get("winnersAllowed", 1), "winnersAllowed", 1, 5),
+            "hoursLeft": self._int_range(payload.get("hoursLeft", 24), "hoursLeft", 1, 336),
+        }
+        state["competitions"].insert(0, competition)
+        self.store.save(state)
+        return {"competition": competition, "competitions": state["competitions"]}
+
+    def submit_competition_entry(self, payload: dict[str, Any]) -> dict[str, Any]:
+        state = self.store.load()
+        competition = self._find_competition(state, str(payload.get("competitionId", "")))
+        stylist_name = self._text(payload.get("stylistName", ""), "stylistName", min_len=2, max_len=80)
+        outfit_items = payload.get("outfitItems", state["selected"])
+        if not isinstance(outfit_items, list) or not outfit_items:
+            raise BackendError("outfitItems must be a non-empty list")
+        known = {item["name"] for item in state["wardrobe"]}
+        missing = [name for name in outfit_items if name not in known]
+        if missing:
+            raise BackendError(f"competition outfit contains unknown wardrobe items: {', '.join(missing)}")
+        entry = {
+            "id": self._next_id(state["competitionEntries"], "competition_entry"),
+            "createdAt": utc_now(),
+            "competitionId": competition["id"],
+            "stylistName": stylist_name,
+            "outfitItems": list(outfit_items),
+            "status": "submitted",
+        }
+        already_entered = any(
+            existing["competitionId"] == competition["id"] and existing["stylistName"].lower() == stylist_name.lower()
+            for existing in state["competitionEntries"]
+        )
+        if not already_entered:
+            competition["stylistsEntered"] = int(competition.get("stylistsEntered", 0)) + 1
+        state["competitionEntries"].append(entry)
+        self.store.save(state)
+        return {"entry": entry, "competition": competition}
+
+    def follow_stylist(self, payload: dict[str, Any]) -> dict[str, Any]:
+        action = str(payload.get("action", "follow"))
+        if action not in VALID_FOLLOW_ACTIONS:
+            raise BackendError("follow action must be follow or unfollow")
+        stylist_name = self._text(payload.get("stylistName", ""), "stylistName", min_len=2, max_len=80)
+        state = self.store.load()
+        if not any(stylist["name"].lower() == stylist_name.lower() for stylist in state["stylists"]):
+            raise BackendError(f"{stylist_name} is not in the stylist marketplace", status=404)
+        account_id = state["profile"]["id"]
+        state["followers"] = [
+            follow
+            for follow in state["followers"]
+            if not (follow["accountId"] == account_id and follow["stylistName"].lower() == stylist_name.lower())
+        ]
+        if action == "follow":
+            state["followers"].append(
+                {
+                    "id": self._next_id(state["followers"], "follow"),
+                    "createdAt": utc_now(),
+                    "accountId": account_id,
+                    "stylistName": stylist_name,
+                }
+            )
+        self.store.save(state)
+        return {"followers": state["followers"]}
+
     def wishlist_action(self, item_name: str, action: str) -> dict[str, Any]:
         if action not in VALID_WISHLIST_ACTIONS:
             raise BackendError("wishlist action must be accept or discard")
@@ -432,15 +705,19 @@ class SwitchItUpBackend:
         category = str(item.get("category", "")).strip()
         if not name:
             raise BackendError("wardrobe item name is required")
-        if category not in {"top", "bottom", "shoes", "jacket", "accessory"}:
+        if category not in VALID_WARDROBE_CATEGORIES:
             raise BackendError("wardrobe item category is invalid")
         colors = item.get("colors") or ["#dbeafe", "#94a3b8"]
         if not isinstance(colors, list) or len(colors) < 2:
             raise BackendError("wardrobe item colors must include two values")
+        if not all(isinstance(color, str) and re.match(r"^#[0-9a-fA-F]{6}$", color) for color in colors[:2]):
+            raise BackendError("wardrobe item colors must be hex values")
         formality = int(item.get("formality", 3))
         warmth = int(item.get("warmth", 1))
         if not 1 <= formality <= 5:
             raise BackendError("wardrobe item formality must be between 1 and 5")
+        if not 1 <= warmth <= 5:
+            raise BackendError("wardrobe item warmth must be between 1 and 5")
         return {
             "name": name,
             "category": category,
@@ -463,9 +740,9 @@ class SwitchItUpBackend:
             raw = base64.b64decode(match.group(3), validate=True)
         except binascii.Error as exc:
             raise BackendError("uploaded photo data is not valid base64") from exc
-        max_bytes = 6 * 1024 * 1024
-        if len(raw) > max_bytes:
+        if len(raw) > MAX_UPLOAD_BYTES:
             raise BackendError("uploaded photo must be 6MB or smaller")
+        self._validate_image_signature(raw, extension)
         safe_stem = re.sub(r"[^a-zA-Z0-9]+", "-", Path(source_name).stem).strip("-").lower() or "wardrobe"
         filename = f"{safe_stem}-{uuid4().hex[:10]}.{extension}"
         upload_dir = self.store.path.parent / "uploads"
@@ -479,6 +756,25 @@ class SwitchItUpBackend:
         if not item:
             raise BackendError(f"{name} is not in the wardrobe", status=404)
         return item
+
+    def _find_post(self, state: dict[str, Any], post_id: str) -> dict[str, Any]:
+        post = next((entry for entry in state["posts"] if entry.get("id") == post_id), None)
+        if not post:
+            raise BackendError(f"{post_id} is not in the style feed", status=404)
+        return post
+
+    def _find_competition(self, state: dict[str, Any], competition_id: str) -> dict[str, Any]:
+        competition = next(
+            (
+                entry
+                for entry in state["competitions"]
+                if entry.get("id") == competition_id or entry.get("name") == competition_id
+            ),
+            None,
+        )
+        if not competition:
+            raise BackendError(f"{competition_id} is not an active competition", status=404)
+        return competition
 
     def _wardrobe_for_engine(self, state: dict[str, Any]) -> tuple[WardrobeItem, ...]:
         return tuple(
@@ -501,3 +797,52 @@ class SwitchItUpBackend:
         if any(word in text for word in ("concert", "campus", "street")):
             return 2
         return 3
+
+    def _next_id(self, records: list[dict[str, Any]], prefix: str) -> str:
+        highest = 0
+        for record in records:
+            match = re.match(rf"^{re.escape(prefix)}_(\d+)$", str(record.get("id", "")))
+            if match:
+                highest = max(highest, int(match.group(1)))
+        return f"{prefix}_{highest + 1:04d}"
+
+    def _text(self, value: Any, field: str, min_len: int, max_len: int) -> str:
+        text = str(value or "").strip()
+        if len(text) < min_len:
+            raise BackendError(f"{field} is required")
+        if len(text) > max_len:
+            raise BackendError(f"{field} must be {max_len} characters or fewer")
+        return text
+
+    def _email(self, value: Any) -> str:
+        email = self._text(value, "contactEmail", min_len=5, max_len=120)
+        if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
+            raise BackendError("contactEmail must be a valid email address")
+        return email
+
+    def _int_range(self, value: Any, field: str, minimum: int, maximum: int) -> int:
+        try:
+            number = int(value)
+        except (TypeError, ValueError) as exc:
+            raise BackendError(f"{field} must be a number") from exc
+        if not minimum <= number <= maximum:
+            raise BackendError(f"{field} must be between {minimum} and {maximum}")
+        return number
+
+    def _float_range(self, value: Any, field: str, minimum: float, maximum: float) -> float:
+        try:
+            number = float(value)
+        except (TypeError, ValueError) as exc:
+            raise BackendError(f"{field} must be a number") from exc
+        if not minimum <= number <= maximum:
+            raise BackendError(f"{field} must be between {minimum:g} and {maximum:g}")
+        return number
+
+    def _validate_image_signature(self, raw: bytes, extension: str) -> None:
+        if extension == "png" and raw.startswith(b"\x89PNG\r\n\x1a\n"):
+            return
+        if extension == "jpg" and raw.startswith(b"\xff\xd8\xff"):
+            return
+        if extension == "webp" and len(raw) >= 12 and raw[:4] == b"RIFF" and raw[8:12] == b"WEBP":
+            return
+        raise BackendError("uploaded photo content does not match its image type")

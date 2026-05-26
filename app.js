@@ -25,6 +25,12 @@ const defaultState = {
     { item: "Silver chain accessory", store: "Urban Rack", price: 22, match: "Adds quiet detail", bg: "linear-gradient(135deg,#e7edf5,#9ba9bb)", photo: "assets/photos/style-feed.jpg" },
   ],
   styleRequests: [],
+  posts: [
+    { id: "post_0001", author: "@tamilooks", subject: "@ray", caption: "Smart casual remix using wardrobe pieces plus one mall jacket. Saved as Friday dinner.", likes: 248, comments: 39, saves: 18, bookingRequests: 12, photo: "assets/photos/style-feed.jpg" },
+  ],
+  competitions: [
+    { id: "competition_0001", name: "Weekend City Vibes", prize: 60, stylistsEntered: 8, winnersAllowed: 2, hoursLeft: 18 },
+  ],
 };
 
 let profile = structuredClone(defaultState.profile);
@@ -32,6 +38,8 @@ let wardrobe = structuredClone(defaultState.wardrobe);
 let selected = [...defaultState.selected];
 let stylists = structuredClone(defaultState.stylists);
 let mall = structuredClone(defaultState.mall);
+let posts = structuredClone(defaultState.posts);
+let competitions = structuredClone(defaultState.competitions);
 let activeCategory = "all";
 let backendOnline = false;
 let uploadedPhotoData = "";
@@ -69,6 +77,8 @@ function applyState(state) {
   selected = [...(state.selected || defaultState.selected)];
   stylists = structuredClone(state.stylists || defaultState.stylists);
   mall = structuredClone(state.mall || defaultState.mall);
+  posts = structuredClone(state.posts || defaultState.posts);
+  competitions = structuredClone(state.competitions || defaultState.competitions);
   syncProfileUi();
 }
 
@@ -92,6 +102,16 @@ function updateApiStatus(label) {
   if (!node) return;
   node.textContent = label || (backendOnline ? "Live backend" : "Static demo");
   node.classList.toggle("live", backendOnline);
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "\"": "&quot;",
+    "'": "&#039;",
+  })[character]);
 }
 
 function syncProfileUi() {
@@ -239,6 +259,35 @@ function renderMall() {
   });
 }
 
+function renderSocial() {
+  document.getElementById("feedList").innerHTML = posts.map((post) => `
+    <article class="feed-card">
+      <div class="fit-photo">
+        <img src="${escapeHtml(post.photo || "assets/photos/style-feed.jpg")}" alt="Styled outfit post" loading="lazy" />
+      </div>
+      <div>
+        <strong>${escapeHtml(post.author || "@ray")} styled ${escapeHtml(post.subject || "@ray")}</strong>
+        <p>${escapeHtml(post.caption)}</p>
+        <span>${Number(post.likes || 0)} likes · ${Number(post.comments || 0)} comments · ${Number(post.saves || 0)} saves · ${Number(post.bookingRequests || 0)} booking requests</span>
+      </div>
+    </article>
+  `).join("");
+}
+
+function renderCompetitions() {
+  const active = competitions[0] || defaultState.competitions[0];
+  document.getElementById("competitionPrize").textContent = `Prize pot GBP ${Number(active.prize || 0)}`;
+  document.getElementById("competitionRows").innerHTML = `
+    <div class="competition-row">
+      <div><strong>${Number(active.stylistsEntered || 0)}</strong><span>stylists entered</span></div>
+      <div><strong>${Number(active.winnersAllowed || 1)}</strong><span>winners allowed</span></div>
+      <div><strong>${Number(active.hoursLeft || 0)}h</strong><span>left to submit</span></div>
+      <button id="openCompetition" type="button">Open competition</button>
+    </div>
+  `;
+  document.getElementById("openCompetition").addEventListener("click", openCompetition);
+}
+
 function markRequestSent(text) {
   document.getElementById("requestOutput").textContent = text;
   document.getElementById("requestStatus").textContent = "Sent to stylist";
@@ -347,6 +396,57 @@ function renderAll() {
   renderFit();
   renderStylists();
   renderMall();
+  renderSocial();
+  renderCompetitions();
+}
+
+async function upgradeStylistAccount() {
+  const result = await callBackend("/api/stylist/upgrade", {
+    specialty: "Smart casual · wardrobe remix · occasion styling",
+    plan: "pro_monthly",
+  });
+  if (result?.profile) {
+    profile = result.profile;
+    stylists = result.stylists || stylists;
+  } else {
+    profile.role = "stylist";
+  }
+  syncProfileUi();
+  renderStylists();
+  markRequestSent("Stylist account upgraded. Your portfolio can now receive paid styling requests.");
+}
+
+async function postCurrentFit() {
+  const caption = `Posted a fit using ${selected.join(", ")}.`;
+  const result = await callBackend("/api/social/posts", {
+    caption,
+    author: "@ray",
+    subject: "@ray",
+    photo: "assets/photos/style-feed.jpg",
+  });
+  if (result?.posts) {
+    posts = result.posts;
+  } else {
+    posts = [{ id: `post_${posts.length + 1}`, author: "@ray", subject: "@ray", caption, likes: 0, comments: 0, saves: 0, bookingRequests: 0, photo: "assets/photos/style-feed.jpg" }, ...posts];
+  }
+  renderSocial();
+  markRequestSent("Fit posted to your style feed for stylist proof and social feedback.");
+}
+
+async function openCompetition() {
+  const result = await callBackend("/api/competitions", {
+    name: "Fresh wardrobe remix",
+    prize: 60,
+    winnersAllowed: 2,
+    hoursLeft: 24,
+  });
+  if (result?.competitions) {
+    competitions = result.competitions;
+  } else {
+    competitions = [{ id: `competition_${competitions.length + 1}`, name: "Fresh wardrobe remix", prize: 60, stylistsEntered: 0, winnersAllowed: 2, hoursLeft: 24 }, ...competitions];
+  }
+  renderCompetitions();
+  markRequestSent("Competition opened. Stylists can submit outfits for your prize pool.");
 }
 
 document.querySelectorAll(".filter-row button").forEach((button) => {
@@ -363,6 +463,9 @@ document.querySelectorAll(".role-toggle button").forEach((button) => {
     syncProfileUi();
   });
 });
+
+document.getElementById("upgradeBtn").addEventListener("click", upgradeStylistAccount);
+document.getElementById("sidebarUpgrade").addEventListener("click", upgradeStylistAccount);
 
 document.querySelectorAll(".stylist-tier button").forEach((button) => {
   button.addEventListener("click", () => {
@@ -439,5 +542,6 @@ document.getElementById("uploadPanel").addEventListener("submit", async (event) 
 document.getElementById("sendWishlist").addEventListener("click", () => {
   markRequestSent("Wishlist sent. If accepted, purchased items move into the wardrobe in the stylist's exact outfit order.");
 });
+document.getElementById("postFit").addEventListener("click", postCurrentFit);
 
 loadState();

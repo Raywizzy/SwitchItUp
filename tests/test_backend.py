@@ -69,9 +69,35 @@ class BackendTests(unittest.TestCase):
                 }
             )
 
+    def test_uploaded_photo_signature_must_match_type(self):
+        fake_png = "data:image/png;base64,aGVsbG8="
+
+        with self.assertRaisesRegex(BackendError, "does not match"):
+            self.backend.add_wardrobe_item(
+                {
+                    "name": "Fake Upload",
+                    "category": "top",
+                    "photoName": "fake.png",
+                    "photoData": fake_png,
+                    "colors": ["#f8fafc", "#cbd5e1"],
+                }
+            )
+
     def test_invalid_wardrobe_category_is_rejected(self):
         with self.assertRaisesRegex(BackendError, "category is invalid"):
             self.backend.add_wardrobe_item({"name": "Mystery Hat", "category": "hat"})
+
+    def test_measurements_are_validated_and_persisted(self):
+        result = self.backend.update_measurements(
+            {"heightCm": 181, "topSize": "L", "waistIn": 34, "shoeSize": "UK 11"}
+        )
+
+        self.assertEqual(result["profile"]["measurements"]["heightCm"], 181)
+        self.assertEqual(self.backend.get_state()["profile"]["measurements"]["shoeSize"], "UK 11")
+
+    def test_invalid_measurements_are_rejected(self):
+        with self.assertRaisesRegex(BackendError, "heightCm must be between"):
+            self.backend.update_measurements({"heightCm": 300})
 
     def test_style_request_returns_plan_and_persists_request(self):
         result = self.backend.create_style_request(
@@ -88,12 +114,85 @@ class BackendTests(unittest.TestCase):
         self.assertGreaterEqual(result["confidence"], 90)
         self.assertEqual(len(self.backend.get_state()["styleRequests"]), 1)
 
+    def test_invalid_style_request_mode_is_rejected(self):
+        with self.assertRaisesRegex(BackendError, "replaceMode"):
+            self.backend.create_style_request({"occasion": "Dinner", "replaceMode": "mystery"})
+
     def test_wishlist_accept_adds_item_to_wardrobe(self):
         result = self.backend.wishlist_action("Structured navy blazer", "accept")
         wardrobe_names = [item["name"] for item in result["wardrobe"]]
 
         self.assertIn("Structured Navy Blazer", wardrobe_names)
         self.assertIn("accepted", result["message"])
+
+    def test_stylist_upgrade_creates_application_and_role(self):
+        result = self.backend.upgrade_stylist_account(
+            {"specialty": "AI-assisted smart casual styling", "plan": "pro_monthly"}
+        )
+
+        self.assertEqual(result["profile"]["role"], "stylist")
+        self.assertEqual(result["application"]["status"], "active")
+        self.assertEqual(len(self.backend.get_state()["stylistApplications"]), 1)
+
+    def test_stylist_upgrade_is_idempotent_for_active_account(self):
+        self.backend.upgrade_stylist_account({"specialty": "Smart casual styling", "plan": "pro_monthly"})
+        result = self.backend.upgrade_stylist_account({"specialty": "Formal styling", "plan": "pro_annual"})
+
+        state = self.backend.get_state()
+        self.assertEqual(len(state["stylistApplications"]), 1)
+        self.assertEqual(result["application"]["plan"], "pro_annual")
+        self.assertEqual(result["application"]["specialty"], "Formal styling")
+
+    def test_social_post_and_comment_are_persisted(self):
+        post_result = self.backend.create_post({"caption": "Testing a clean dinner fit with wardrobe pieces."})
+        post_id = post_result["post"]["id"]
+
+        reaction = self.backend.react_to_post(
+            {"postId": post_id, "action": "comment", "text": "This works well for dinner."}
+        )
+
+        self.assertEqual(reaction["post"]["comments"], 1)
+        self.assertEqual(reaction["comment"]["postId"], post_id)
+
+    def test_message_is_persisted(self):
+        result = self.backend.send_message({"to": "Tami Looks", "text": "Can you remix this outfit?"})
+
+        self.assertEqual(result["message"]["to"], "Tami Looks")
+        self.assertFalse(result["message"]["read"])
+
+    def test_mall_registration_requires_valid_email(self):
+        with self.assertRaisesRegex(BackendError, "valid email"):
+            self.backend.register_mall({"companyName": "StyleHub", "contactEmail": "not-an-email"})
+
+    def test_mall_registration_is_persisted(self):
+        result = self.backend.register_mall(
+            {"companyName": "StyleHub", "contactEmail": "owner@stylehub.example", "plan": "starter"}
+        )
+
+        self.assertEqual(result["registration"]["status"], "pending_verification")
+        self.assertEqual(len(self.backend.get_state()["mallRegistrations"]), 1)
+
+    def test_competition_create_and_submit_entry(self):
+        competition = self.backend.create_competition(
+            {"name": "Dinner Fit Challenge", "prize": 75, "winnersAllowed": 2, "hoursLeft": 48}
+        )["competition"]
+
+        result = self.backend.submit_competition_entry(
+            {
+                "competitionId": competition["id"],
+                "stylistName": "Tami Looks",
+                "outfitItems": ["White Oxford Shirt", "Stone Chinos", "White Trainers"],
+            }
+        )
+
+        self.assertEqual(result["competition"]["stylistsEntered"], 1)
+        self.assertEqual(result["entry"]["status"], "submitted")
+
+    def test_follow_stylist_is_idempotent(self):
+        self.backend.follow_stylist({"stylistName": "Tami Looks", "action": "follow"})
+        result = self.backend.follow_stylist({"stylistName": "Tami Looks", "action": "follow"})
+
+        self.assertEqual(len(result["followers"]), 1)
 
 
 if __name__ == "__main__":

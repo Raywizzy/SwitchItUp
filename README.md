@@ -22,7 +22,7 @@ The app idea:
 - Wardrobe photo-card simulation
 - Virtual-you outfit preview
 - Style request workflow
-- Local JSON backend API with persistent wardrobe, scan, role, style request, and wishlist state
+- Local JSON backend API with persistent profile, wardrobe, scan, role, style request, wishlist, stylist upgrade, social, messaging, mall registration, and competition state
 - Real wardrobe, mall, stylist, and social feed images stored in `assets/photos/`
 - Stylist marketplace cards
 - Mall wishlist panel
@@ -69,12 +69,31 @@ python3 -m unittest discover -s tests -v
 - `GET /api/health`
 - `GET /api/state`
 - `POST /api/profile/role`
+- `POST /api/profile/measurements`
+- `POST /api/stylist/upgrade`
 - `POST /api/wardrobe`
 - `POST /api/outfit/select`
 - `POST /api/scan`
 - `POST /api/style-requests`
 - `POST /api/wishlist`
+- `POST /api/social/posts`
+- `POST /api/social/react`
+- `POST /api/messages`
+- `POST /api/mall/register`
+- `POST /api/competitions`
+- `POST /api/competitions/entries`
+- `POST /api/stylists/follow`
 - `POST /api/reset`
+
+## Backend Hardening
+
+- Atomic JSON writes with schema migration for newly added state keys
+- Request body size limit for upload-heavy JSON requests
+- Security headers for local API responses
+- Configurable data path, host, port, and CORS origin through environment variables
+- Upload validation for PNG, JPEG, and WebP data URLs, including size and file signature checks
+- Input validation for measurements, stylist plans, mall emails, competition prizes, and social actions
+- Unit coverage for wardrobe uploads, style requests, wishlist actions, social posts, messages, mall registration, competitions, follows, and measurement updates
 
 ## Image Credits
 
