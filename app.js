@@ -46,9 +46,21 @@ let uploadedPhotoData = "";
 let uploadedPhotoName = "";
 const maxUploadBytes = 6 * 1024 * 1024;
 const acceptedUploadTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
+const githubPagesApiBase = "https://switchitup.vercel.app";
+const apiBase = (
+  window.SWITCHITUP_API_BASE ||
+  document.querySelector("meta[name='switchitup-api-base']")?.content ||
+  (window.location.hostname.endsWith("github.io") ? githubPagesApiBase : "") ||
+  ""
+).replace(/\/+$/, "");
+
+function apiUrl(path) {
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${apiBase}${path}`;
+}
 
 async function api(path, options = {}) {
-  const response = await fetch(path, {
+  const response = await fetch(apiUrl(path), {
     headers: { "Content-Type": "application/json", ...(options.headers || {}) },
     ...options,
   });

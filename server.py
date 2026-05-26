@@ -43,6 +43,15 @@ class SwitchItUpHandler(SimpleHTTPRequestHandler):
             return
         super().do_GET()
 
+    def do_HEAD(self) -> None:
+        path = urlparse(self.path).path
+        if path in {"/api/health", "/api/state"}:
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.end_headers()
+            return
+        super().do_HEAD()
+
     def do_POST(self) -> None:
         path = urlparse(self.path).path
         try:

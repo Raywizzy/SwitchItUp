@@ -15,6 +15,7 @@ python3 server.py
 Manual checks:
 
 - API health check returns JSON at `http://127.0.0.1:5180/api/health`.
+- Live API health check returns JSON at `https://switchitup.vercel.app/api/health`.
 - Role toggle changes account mode.
 - Upgrade buttons create an active stylist application and switch the account to stylist mode.
 - Wardrobe Wear buttons update the virtual outfit.
@@ -24,6 +25,7 @@ Manual checks:
 - Post Fit creates a persisted social feed post.
 - Open Competition creates a persisted styling competition.
 - Refreshing after backend actions keeps saved JSON state.
+- GitHub Pages loads the hosted API instead of falling back to the static demo.
 - Mobile layout remains usable.
 
 Backend unit coverage:

@@ -85,6 +85,22 @@ python3 -m unittest discover -s tests -v
 - `POST /api/stylists/follow`
 - `POST /api/reset`
 
+## Live Deployment
+
+Live app:
+
+```text
+https://switchitup.vercel.app
+```
+
+Deployment files:
+
+- `vercel.json` routes `/api/*` to the Python serverless entrypoint in `api/index.py`
+- `api/index.py` reuses the local backend handler and stores runtime state in `/tmp` on Vercel
+- `app.js` reads the optional `<meta name="switchitup-api-base">` value and automatically points GitHub Pages to `https://switchitup.vercel.app`
+
+For a permanent multi-user production launch, replace the serverless `/tmp` state with a managed database and object storage.
+
 ## Backend Hardening
 
 - Atomic JSON writes with schema migration for newly added state keys
