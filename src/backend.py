@@ -7,11 +7,15 @@ reuses the rule-based style engine for outfit recommendations.
 
 from __future__ import annotations
 
+import base64
+import binascii
 from copy import deepcopy
 from datetime import datetime, timezone
 import json
 from pathlib import Path
+import re
 from typing import Any
+from uuid import uuid4
 
 from src.style_engine import StyleRequest, WardrobeItem, build_style_plan, sample_stylists
 
@@ -302,6 +306,9 @@ class SwitchItUpBackend:
         item = payload.get("item", payload)
         if not isinstance(item, dict):
             raise BackendError("wardrobe item must be an object")
+        photo_data = item.pop("photoData", None)
+        if photo_data:
+            item["photo"] = self._save_uploaded_photo(str(photo_data), str(item.get("photoName", item.get("name", "wardrobe"))))
         normalized = self._normalize_wardrobe_item(item)
         state = self.store.load()
         if any(existing["name"].lower() == normalized["name"].lower() for existing in state["wardrobe"]):
@@ -446,6 +453,26 @@ class SwitchItUpBackend:
             "colors": colors[:2],
             "photo": str(item.get("photo", "assets/photos/style-feed.jpg")),
         }
+
+    def _save_uploaded_photo(self, data_url: str, source_name: str) -> str:
+        match = re.match(r"^data:(image/(png|jpeg|jpg|webp));base64,(.+)$", data_url)
+        if not match:
+            raise BackendError("uploaded photo must be a PNG, JPEG, or WebP data URL")
+        extension = "jpg" if match.group(2) in {"jpeg", "jpg"} else match.group(2)
+        try:
+            raw = base64.b64decode(match.group(3), validate=True)
+        except binascii.Error as exc:
+            raise BackendError("uploaded photo data is not valid base64") from exc
+        max_bytes = 6 * 1024 * 1024
+        if len(raw) > max_bytes:
+            raise BackendError("uploaded photo must be 6MB or smaller")
+        safe_stem = re.sub(r"[^a-zA-Z0-9]+", "-", Path(source_name).stem).strip("-").lower() or "wardrobe"
+        filename = f"{safe_stem}-{uuid4().hex[:10]}.{extension}"
+        upload_dir = self.store.path.parent / "uploads"
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        upload_path = upload_dir / filename
+        upload_path.write_bytes(raw)
+        return f"data/uploads/{filename}"
 
     def _find_wardrobe_item(self, state: dict[str, Any], name: str) -> dict[str, Any]:
         item = next((entry for entry in state["wardrobe"] if entry["name"] == name), None)

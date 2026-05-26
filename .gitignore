@@ -8,3 +8,4 @@ reports/*.csv
 reports/*.json
 !reports/sample_style_report.csv
 data/app_state.json
+data/uploads/

@@ -38,6 +38,37 @@ class BackendTests(unittest.TestCase):
         self.assertEqual(result["item"]["name"], "Grey Knit Polo")
         self.assertIn("Grey Knit Polo", [item["name"] for item in self.backend.get_state()["wardrobe"]])
 
+    def test_uploaded_photo_is_saved_and_referenced(self):
+        tiny_png = (
+            "data:image/png;base64,"
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII="
+        )
+
+        result = self.backend.add_wardrobe_item(
+            {
+                "name": "Uploaded Linen Shirt",
+                "category": "top",
+                "photoName": "linen-shirt.png",
+                "photoData": tiny_png,
+                "colors": ["#f8fafc", "#cbd5e1"],
+            }
+        )
+
+        photo_path = result["item"]["photo"]
+        self.assertTrue(photo_path.startswith("data/uploads/linen-shirt-"))
+        self.assertTrue((self.store_path.parent / "uploads" / Path(photo_path).name).exists())
+
+    def test_invalid_uploaded_photo_is_rejected(self):
+        with self.assertRaisesRegex(BackendError, "valid base64"):
+            self.backend.add_wardrobe_item(
+                {
+                    "name": "Broken Upload",
+                    "category": "top",
+                    "photoName": "broken.png",
+                    "photoData": "data:image/png;base64,not-a-real-image",
+                }
+            )
+
     def test_invalid_wardrobe_category_is_rejected(self):
         with self.assertRaisesRegex(BackendError, "category is invalid"):
             self.backend.add_wardrobe_item({"name": "Mystery Hat", "category": "hat"})

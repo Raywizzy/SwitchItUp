@@ -88,6 +88,33 @@
             <button type="button">Bottoms</button>
             <button type="button">Shoes</button>
           </div>
+          <form class="upload-panel" id="uploadPanel" hidden>
+            <label>
+              Photo
+              <input id="photoUpload" type="file" accept="image/png,image/jpeg,image/webp" />
+            </label>
+            <label>
+              Name
+              <input id="uploadName" type="text" placeholder="Blue linen shirt" />
+            </label>
+            <label>
+              Category
+              <select id="uploadCategory">
+                <option value="top">Top</option>
+                <option value="bottom">Bottom</option>
+                <option value="shoes">Shoes</option>
+                <option value="jacket">Jacket</option>
+                <option value="accessory">Accessory</option>
+              </select>
+            </label>
+            <div class="upload-preview" id="uploadPreview">
+              <span>Choose a clothing photo</span>
+            </div>
+            <div class="upload-actions">
+              <button type="button" id="cancelUpload">Cancel</button>
+              <button type="submit">Save item</button>
+            </div>
+          </form>
           <div id="wardrobeGrid" class="wardrobe-list"></div>
         </section>
 

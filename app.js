@@ -34,6 +34,10 @@ let stylists = structuredClone(defaultState.stylists);
 let mall = structuredClone(defaultState.mall);
 let activeCategory = "all";
 let backendOnline = false;
+let uploadedPhotoData = "";
+let uploadedPhotoName = "";
+const maxUploadBytes = 6 * 1024 * 1024;
+const acceptedUploadTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
 
 async function api(path, options = {}) {
   const response = await fetch(path, {
@@ -276,25 +280,65 @@ async function sendRequest() {
   document.getElementById("confidence").textContent = mode === "all" ? "94% remix confidence" : "91% fit confidence";
 }
 
-function nextCoralJacketName() {
-  const base = "Coral Statement Jacket";
+function nextUploadedItemName() {
+  const base = "Uploaded Wardrobe Photo";
   if (!wardrobe.some((item) => item.name === base)) return base;
   return `${base} ${wardrobe.filter((item) => item.name.startsWith(base)).length + 1}`;
 }
 
 function newPhotoItem() {
+  const category = document.getElementById("uploadCategory").value;
+  const name = document.getElementById("uploadName").value.trim() || nextUploadedItemName();
   return {
-    name: nextCoralJacketName(),
-    category: "jacket",
-    fit: "structured",
-    material: "woven crepe",
-    colorName: "coral",
-    color: "coral",
-    formality: 4,
-    warmth: 2,
-    colors: ["#ff5c70", "#fb7185"],
-    photo: "assets/photos/mall-blazer.jpg",
+    name,
+    category,
+    fit: category === "shoes" ? "low profile" : category === "jacket" ? "structured" : "regular",
+    material: "uploaded photo",
+    colorName: "custom",
+    color: "custom",
+    formality: category === "accessory" ? 2 : 3,
+    warmth: category === "jacket" ? 3 : 1,
+    colors: ["#f8fafc", "#94a3b8"],
+    photo: uploadedPhotoData || "assets/photos/style-feed.jpg",
+    photoData: uploadedPhotoData,
+    photoName: uploadedPhotoName || `${name}.jpg`,
   };
+}
+
+function openUploadPanel() {
+  document.getElementById("uploadPanel").hidden = false;
+  document.getElementById("uploadName").focus();
+}
+
+function setUploadPrompt(message) {
+  const preview = document.getElementById("uploadPreview");
+  const prompt = document.createElement("span");
+  prompt.textContent = message;
+  preview.replaceChildren(prompt);
+}
+
+function setUploadPreview(src) {
+  const image = document.createElement("img");
+  image.src = src;
+  image.alt = "Selected wardrobe upload preview";
+  document.getElementById("uploadPreview").replaceChildren(image);
+}
+
+function closeUploadPanel() {
+  uploadedPhotoData = "";
+  uploadedPhotoName = "";
+  document.getElementById("uploadPanel").hidden = true;
+  document.getElementById("uploadPanel").reset();
+  setUploadPrompt("Choose a clothing photo");
+}
+
+function readSelectedPhoto(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.addEventListener("load", () => resolve(reader.result));
+    reader.addEventListener("error", () => reject(reader.error));
+    reader.readAsDataURL(file);
+  });
 }
 
 function renderAll() {
@@ -342,16 +386,55 @@ document.getElementById("styleMe").addEventListener("click", async () => {
   renderFit();
   await sendRequest();
 });
-document.getElementById("addItem").addEventListener("click", async () => {
+document.getElementById("addItem").addEventListener("click", openUploadPanel);
+document.getElementById("cancelUpload").addEventListener("click", closeUploadPanel);
+document.getElementById("photoUpload").addEventListener("change", async (event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  uploadedPhotoData = "";
+  uploadedPhotoName = "";
+  if (!acceptedUploadTypes.has(file.type)) {
+    event.target.value = "";
+    setUploadPrompt("Use a PNG, JPEG, or WebP photo");
+    return;
+  }
+  if (file.size > maxUploadBytes) {
+    event.target.value = "";
+    setUploadPrompt("Use a photo under 6MB");
+    return;
+  }
+  try {
+    uploadedPhotoData = await readSelectedPhoto(file);
+    uploadedPhotoName = file.name;
+    setUploadPreview(uploadedPhotoData);
+  } catch (error) {
+    event.target.value = "";
+    setUploadPrompt("Could not read this photo");
+    console.warn("Switch It Up could not read the selected wardrobe photo.", error);
+    return;
+  }
+  if (!document.getElementById("uploadName").value.trim()) {
+    document.getElementById("uploadName").value = file.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ");
+  }
+});
+document.getElementById("uploadPanel").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!uploadedPhotoData) {
+    setUploadPrompt("Please choose a clothing photo first");
+    return;
+  }
   const item = newPhotoItem();
   const result = await callBackend("/api/wardrobe", { item });
   if (result?.wardrobe) {
     wardrobe = result.wardrobe;
   } else {
+    delete item.photoData;
+    delete item.photoName;
     wardrobe.push(item);
   }
   updateWardrobeCount();
   renderWardrobe();
+  closeUploadPanel();
 });
 document.getElementById("sendWishlist").addEventListener("click", () => {
   markRequestSent("Wishlist sent. If accepted, purchased items move into the wardrobe in the stylist's exact outfit order.");
