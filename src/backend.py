@@ -61,6 +61,7 @@ def default_state() -> dict[str, Any]:
                 "formality": 4,
                 "warmth": 1,
                 "colors": ["#ffffff", "#cbd5e1"],
+                "photo": "assets/photos/white-shirt.jpg",
             },
             {
                 "name": "Black Relaxed Tee",
@@ -72,6 +73,7 @@ def default_state() -> dict[str, Any]:
                 "formality": 2,
                 "warmth": 1,
                 "colors": ["#111827", "#334155"],
+                "photo": "assets/photos/black-tee.jpg",
             },
             {
                 "name": "Stone Chinos",
@@ -83,6 +85,7 @@ def default_state() -> dict[str, Any]:
                 "formality": 4,
                 "warmth": 2,
                 "colors": ["#cdbb9d", "#a8906f"],
+                "photo": "assets/photos/stone-chinos.jpg",
             },
             {
                 "name": "Dark Denim",
@@ -94,6 +97,7 @@ def default_state() -> dict[str, Any]:
                 "formality": 2,
                 "warmth": 2,
                 "colors": ["#1e3a8a", "#0f172a"],
+                "photo": "assets/photos/dark-denim.jpg",
             },
             {
                 "name": "White Trainers",
@@ -105,6 +109,7 @@ def default_state() -> dict[str, Any]:
                 "formality": 3,
                 "warmth": 1,
                 "colors": ["#ffffff", "#dbeafe"],
+                "photo": "assets/photos/white-trainers.jpg",
             },
             {
                 "name": "Navy Overshirt",
@@ -116,6 +121,7 @@ def default_state() -> dict[str, Any]:
                 "formality": 3,
                 "warmth": 3,
                 "colors": ["#1e3a8a", "#0f172a"],
+                "photo": "assets/photos/navy-overshirt.jpg",
             },
         ],
         "selected": ["White Oxford Shirt", "Stone Chinos", "White Trainers"],
@@ -127,6 +133,7 @@ def default_state() -> dict[str, Any]:
                 "helped": 214,
                 "paid": True,
                 "avatar": "linear-gradient(145deg,#7b4f38,#f3d2b2 58%,#1d2636 59%)",
+                "photo": "assets/photos/blazer-portrait.jpg",
             },
             {
                 "name": "Kola Fits",
@@ -135,6 +142,7 @@ def default_state() -> dict[str, Any]:
                 "helped": 187,
                 "paid": True,
                 "avatar": "linear-gradient(145deg,#6e4635,#caa07b 55%,#233047 56%)",
+                "photo": "assets/photos/style-feed.jpg",
             },
             {
                 "name": "Ari Tailored",
@@ -143,6 +151,7 @@ def default_state() -> dict[str, Any]:
                 "helped": 143,
                 "paid": True,
                 "avatar": "linear-gradient(145deg,#8a5f46,#e2b991 55%,#111827 56%)",
+                "photo": "assets/photos/avatar-model.jpg",
             },
             {
                 "name": "Maya FreeFit",
@@ -151,6 +160,7 @@ def default_state() -> dict[str, Any]:
                 "helped": 91,
                 "paid": False,
                 "avatar": "linear-gradient(145deg,#8a583e,#d9a780 55%,#f7dce4 56%)",
+                "photo": "assets/photos/black-tee.jpg",
             },
         ],
         "mall": [
@@ -161,6 +171,7 @@ def default_state() -> dict[str, Any]:
                 "price": 78,
                 "match": "Sharpens dinner fit",
                 "bg": "linear-gradient(135deg,#081827,#0d2e55)",
+                "photo": "assets/photos/mall-blazer.jpg",
                 "wardrobeItem": {
                     "name": "Structured Navy Blazer",
                     "category": "jacket",
@@ -171,6 +182,7 @@ def default_state() -> dict[str, Any]:
                     "formality": 5,
                     "warmth": 3,
                     "colors": ["#081827", "#0d2e55"],
+                    "photo": "assets/photos/mall-blazer.jpg",
                 },
             },
             {
@@ -180,6 +192,7 @@ def default_state() -> dict[str, Any]:
                 "price": 64,
                 "match": "Upgrades footwear",
                 "bg": "linear-gradient(135deg,#7a3f1f,#c87a3a)",
+                "photo": "assets/photos/loafers.jpg",
                 "wardrobeItem": {
                     "name": "Minimal Leather Loafers",
                     "category": "shoes",
@@ -190,6 +203,7 @@ def default_state() -> dict[str, Any]:
                     "formality": 4,
                     "warmth": 1,
                     "colors": ["#7a3f1f", "#c87a3a"],
+                    "photo": "assets/photos/loafers.jpg",
                 },
             },
             {
@@ -199,6 +213,7 @@ def default_state() -> dict[str, Any]:
                 "price": 22,
                 "match": "Adds quiet detail",
                 "bg": "linear-gradient(135deg,#e7edf5,#9ba9bb)",
+                "photo": "assets/photos/style-feed.jpg",
                 "wardrobeItem": {
                     "name": "Silver Chain Accessory",
                     "category": "accessory",
@@ -209,6 +224,7 @@ def default_state() -> dict[str, Any]:
                     "formality": 3,
                     "warmth": 1,
                     "colors": ["#e7edf5", "#9ba9bb"],
+                    "photo": "assets/photos/style-feed.jpg",
                 },
             },
         ],
@@ -223,6 +239,7 @@ def default_state() -> dict[str, Any]:
                 "comments": 39,
                 "saves": 18,
                 "bookingRequests": 12,
+                "photo": "assets/photos/style-feed.jpg",
             }
         ],
         "competitions": [
@@ -427,6 +444,7 @@ class SwitchItUpBackend:
             "formality": formality,
             "warmth": warmth,
             "colors": colors[:2],
+            "photo": str(item.get("photo", "assets/photos/style-feed.jpg")),
         }
 
     def _find_wardrobe_item(self, state: dict[str, Any], name: str) -> dict[str, Any]:

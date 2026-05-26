@@ -23,6 +23,7 @@ The app idea:
 - Virtual-you outfit preview
 - Style request workflow
 - Local JSON backend API with persistent wardrobe, scan, role, style request, and wishlist state
+- Real wardrobe, mall, stylist, and social feed images stored in `assets/photos/`
 - Stylist marketplace cards
 - Mall wishlist panel
 - Social proof feed
@@ -74,6 +75,10 @@ python3 -m unittest discover -s tests -v
 - `POST /api/style-requests`
 - `POST /api/wishlist`
 - `POST /api/reset`
+
+## Image Credits
+
+Image sources are documented in `docs/image-credits.md`.
 
 ## Export Report
 

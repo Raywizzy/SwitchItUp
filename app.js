@@ -5,24 +5,24 @@ const defaultState = {
     scan: { status: "ready", quality: 91 },
   },
   wardrobe: [
-    { name: "White Oxford Shirt", category: "top", fit: "tailored", material: "brushed cotton", colorName: "white", formality: 4, warmth: 1, colors: ["#ffffff", "#cbd5e1"] },
-    { name: "Black Relaxed Tee", category: "top", fit: "relaxed", material: "premium cotton", colorName: "black", formality: 2, warmth: 1, colors: ["#111827", "#334155"] },
-    { name: "Stone Chinos", category: "bottom", fit: "straight", material: "cotton twill", colorName: "beige", formality: 4, warmth: 2, colors: ["#cdbb9d", "#a8906f"] },
-    { name: "Dark Denim", category: "bottom", fit: "tapered", material: "raw denim", colorName: "indigo", formality: 2, warmth: 2, colors: ["#1e3a8a", "#0f172a"] },
-    { name: "White Trainers", category: "shoes", fit: "low profile", material: "leather", colorName: "white", formality: 3, warmth: 1, colors: ["#ffffff", "#dbeafe"] },
-    { name: "Navy Overshirt", category: "jacket", fit: "boxy", material: "linen blend", colorName: "navy", formality: 3, warmth: 3, colors: ["#1e3a8a", "#0f172a"] },
+    { name: "White Oxford Shirt", category: "top", fit: "tailored", material: "brushed cotton", colorName: "white", formality: 4, warmth: 1, colors: ["#ffffff", "#cbd5e1"], photo: "assets/photos/white-shirt.jpg" },
+    { name: "Black Relaxed Tee", category: "top", fit: "relaxed", material: "premium cotton", colorName: "black", formality: 2, warmth: 1, colors: ["#111827", "#334155"], photo: "assets/photos/black-tee.jpg" },
+    { name: "Stone Chinos", category: "bottom", fit: "straight", material: "cotton twill", colorName: "beige", formality: 4, warmth: 2, colors: ["#cdbb9d", "#a8906f"], photo: "assets/photos/stone-chinos.jpg" },
+    { name: "Dark Denim", category: "bottom", fit: "tapered", material: "raw denim", colorName: "indigo", formality: 2, warmth: 2, colors: ["#1e3a8a", "#0f172a"], photo: "assets/photos/dark-denim.jpg" },
+    { name: "White Trainers", category: "shoes", fit: "low profile", material: "leather", colorName: "white", formality: 3, warmth: 1, colors: ["#ffffff", "#dbeafe"], photo: "assets/photos/white-trainers.jpg" },
+    { name: "Navy Overshirt", category: "jacket", fit: "boxy", material: "linen blend", colorName: "navy", formality: 3, warmth: 3, colors: ["#1e3a8a", "#0f172a"], photo: "assets/photos/navy-overshirt.jpg" },
   ],
   selected: ["White Oxford Shirt", "Stone Chinos", "White Trainers"],
   stylists: [
-    { name: "Tami Looks", specialty: "Smart casual · dates · brunch", rating: 4.9, helped: 214, paid: true, avatar: "linear-gradient(145deg,#7b4f38,#f3d2b2 58%,#1d2636 59%)" },
-    { name: "Kola Fits", specialty: "Streetwear · concerts · campus", rating: 4.8, helped: 187, paid: true, avatar: "linear-gradient(145deg,#6e4635,#caa07b 55%,#233047 56%)" },
-    { name: "Ari Tailored", specialty: "Weddings · formal · business", rating: 4.7, helped: 143, paid: true, avatar: "linear-gradient(145deg,#8a5f46,#e2b991 55%,#111827 56%)" },
-    { name: "Maya FreeFit", specialty: "Budget wardrobe remix", rating: 4.6, helped: 91, paid: false, avatar: "linear-gradient(145deg,#8a583e,#d9a780 55%,#f7dce4 56%)" },
+    { name: "Tami Looks", specialty: "Smart casual · dates · brunch", rating: 4.9, helped: 214, paid: true, avatar: "linear-gradient(145deg,#7b4f38,#f3d2b2 58%,#1d2636 59%)", photo: "assets/photos/blazer-portrait.jpg" },
+    { name: "Kola Fits", specialty: "Streetwear · concerts · campus", rating: 4.8, helped: 187, paid: true, avatar: "linear-gradient(145deg,#6e4635,#caa07b 55%,#233047 56%)", photo: "assets/photos/style-feed.jpg" },
+    { name: "Ari Tailored", specialty: "Weddings · formal · business", rating: 4.7, helped: 143, paid: true, avatar: "linear-gradient(145deg,#8a5f46,#e2b991 55%,#111827 56%)", photo: "assets/photos/avatar-model.jpg" },
+    { name: "Maya FreeFit", specialty: "Budget wardrobe remix", rating: 4.6, helped: 91, paid: false, avatar: "linear-gradient(145deg,#8a583e,#d9a780 55%,#f7dce4 56%)", photo: "assets/photos/black-tee.jpg" },
   ],
   mall: [
-    { item: "Structured navy blazer", store: "Metro Mall", price: 78, match: "Sharpens dinner fit", bg: "linear-gradient(135deg,#081827,#0d2e55)" },
-    { item: "Minimal leather loafers", store: "StyleHub", price: 64, match: "Upgrades footwear", bg: "linear-gradient(135deg,#7a3f1f,#c87a3a)" },
-    { item: "Silver chain accessory", store: "Urban Rack", price: 22, match: "Adds quiet detail", bg: "linear-gradient(135deg,#e7edf5,#9ba9bb)" },
+    { item: "Structured navy blazer", store: "Metro Mall", price: 78, match: "Sharpens dinner fit", bg: "linear-gradient(135deg,#081827,#0d2e55)", photo: "assets/photos/mall-blazer.jpg" },
+    { item: "Minimal leather loafers", store: "StyleHub", price: 64, match: "Upgrades footwear", bg: "linear-gradient(135deg,#7a3f1f,#c87a3a)", photo: "assets/photos/loafers.jpg" },
+    { item: "Silver chain accessory", store: "Urban Rack", price: 22, match: "Adds quiet detail", bg: "linear-gradient(135deg,#e7edf5,#9ba9bb)", photo: "assets/photos/style-feed.jpg" },
   ],
   styleRequests: [],
 };
@@ -132,7 +132,9 @@ function renderWardrobe() {
   document.getElementById("wardrobeGrid").innerHTML = visible.map((item) => `
     <article class="cloth">
       <span class="wardrobe-select-dot" aria-hidden="true"></span>
-      <div class="cloth-art" style="--c1:${item.colors[0]};--c2:${item.colors[1]}"></div>
+      <div class="cloth-art" style="--c1:${item.colors[0]};--c2:${item.colors[1]}">
+        ${item.photo ? `<img src="${item.photo}" alt="${item.name}" loading="lazy">` : ""}
+      </div>
       <div>
         <strong>${item.name}</strong>
         <small>${item.material} · ${item.colorName}</small>
@@ -189,7 +191,9 @@ function renderFit() {
 function renderStylists() {
   document.getElementById("stylistCards").innerHTML = stylists.map((stylist) => `
     <article class="stylist-card">
-      <span class="stylist-avatar" style="--avatar:${stylist.avatar}" aria-hidden="true"></span>
+      <span class="stylist-avatar" style="--avatar:${stylist.avatar}">
+        ${stylist.photo ? `<img src="${stylist.photo}" alt="${stylist.name}" loading="lazy">` : ""}
+      </span>
       <div>
         <strong>${stylist.name}</strong>
         <span>${stylist.specialty}</span>
@@ -202,7 +206,9 @@ function renderStylists() {
 function renderMall() {
   document.getElementById("mallItems").innerHTML = mall.map((item) => `
     <article class="mall-item">
-      <span class="mall-thumb" style="--mall-bg:${item.bg}" aria-hidden="true"></span>
+      <span class="mall-thumb" style="--mall-bg:${item.bg}">
+        ${item.photo ? `<img src="${item.photo}" alt="${item.item}" loading="lazy">` : ""}
+      </span>
       <strong>${item.item}</strong>
       <span>${item.store} · GBP ${item.price} · ${item.match}</span>
       <div class="mall-actions">
@@ -287,6 +293,7 @@ function newPhotoItem() {
     formality: 4,
     warmth: 2,
     colors: ["#ff5c70", "#fb7185"],
+    photo: "assets/photos/mall-blazer.jpg",
   };
 }
 
