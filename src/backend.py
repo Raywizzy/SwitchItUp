@@ -834,9 +834,12 @@ class SwitchItUpBackend:
         if len(raw) > MAX_UPLOAD_BYTES:
             raise BackendError("uploaded photo must be 6MB or smaller")
         self._validate_image_signature(raw, extension)
+        store_path = getattr(self.store, "path", None)
+        if store_path is None:
+            return data_url
         safe_stem = re.sub(r"[^a-zA-Z0-9]+", "-", Path(source_name).stem).strip("-").lower() or "wardrobe"
         filename = f"{safe_stem}-{uuid4().hex[:10]}.{extension}"
-        upload_dir = self.store.path.parent / "uploads"
+        upload_dir = Path(store_path).parent / "uploads"
         upload_dir.mkdir(parents=True, exist_ok=True)
         upload_path = upload_dir / filename
         upload_path.write_bytes(raw)

@@ -25,6 +25,7 @@ Manual checks:
 - Post Fit creates a persisted social feed post.
 - Open Competition creates a persisted styling competition.
 - Refreshing after backend actions keeps saved JSON state.
+- Two different browser session ids keep independent wardrobe, social, role, and request state.
 - GitHub Pages loads the hosted API instead of falling back to the static demo.
 - Supabase-backed state store seeds, migrates, and upserts state without network calls in unit tests.
 - Mobile layout remains usable.
@@ -33,6 +34,7 @@ Backend unit coverage:
 
 - profile role and measurements
 - wardrobe creation and image upload validation
+- browser session state id validation and local JSON isolation
 - outfit selection
 - scan capture
 - style request validation and plan persistence

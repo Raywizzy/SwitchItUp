@@ -53,6 +53,36 @@ const apiBase = (
   (window.location.hostname.endsWith("github.io") ? githubPagesApiBase : "") ||
   ""
 ).replace(/\/+$/, "");
+const sessionStorageKey = "switchitup.sessionId";
+const sessionHeader = "X-SwitchItUp-Session";
+const sessionIdPattern = /^session_[a-z0-9]{16,64}$/;
+
+function randomSessionSuffix() {
+  if (window.crypto?.getRandomValues) {
+    const bytes = new Uint8Array(16);
+    window.crypto.getRandomValues(bytes);
+    return Array.from(bytes, (byte) => byte.toString(36).padStart(2, "0")).join("").slice(0, 32);
+  }
+  return `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`.padEnd(24, "0").slice(0, 32);
+}
+
+function getSessionId() {
+  try {
+    const existing = window.localStorage?.getItem(sessionStorageKey);
+    if (sessionIdPattern.test(existing || "")) return existing;
+  } catch (error) {
+    console.info("Switch It Up could not read local session storage.", error);
+  }
+  const created = `session_${randomSessionSuffix()}`;
+  try {
+    window.localStorage?.setItem(sessionStorageKey, created);
+  } catch (error) {
+    console.info("Switch It Up could not persist local session storage.", error);
+  }
+  return created;
+}
+
+const switchItUpSessionId = getSessionId();
 
 function apiUrl(path) {
   if (/^https?:\/\//i.test(path)) return path;
@@ -61,7 +91,7 @@ function apiUrl(path) {
 
 async function api(path, options = {}) {
   const response = await fetch(apiUrl(path), {
-    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+    headers: { "Content-Type": "application/json", [sessionHeader]: switchItUpSessionId, ...(options.headers || {}) },
     ...options,
   });
   if (!response.ok) {

@@ -28,15 +28,15 @@
 ## Backend MVP Scope
 
 - `server.py` runs the static frontend and API from one local server, or as a Vercel Python function through `api/index.py`.
-- `src/backend.py` stores app data in `data/app_state.json` locally or a Supabase/Postgres JSONB row when hosted persistence credentials are configured. It exposes service methods for profile role, measurements, wardrobe, selected outfit, scan capture, style requests, wishlist decisions, stylist upgrades, social posts/reactions, direct messages, mall registration, competitions, competition entries, and stylist follows.
+- `src/backend.py` stores app data in per-session `data/app_state-*.json` files locally or per-session Supabase/Postgres JSONB rows when hosted persistence credentials are configured. It exposes service methods for profile role, measurements, wardrobe, selected outfit, scan capture, style requests, wishlist decisions, stylist upgrades, social posts/reactions, direct messages, mall registration, competitions, competition entries, and stylist follows.
 - The backend reuses the rule-based style engine to create real outfit plans from the saved wardrobe.
-- Uploads are saved under `data/uploads/` after type, size, base64, and image signature validation.
+- Uploads are saved under `data/uploads/` locally or stored as validated data URLs in hosted session state after type, size, base64, and image signature validation.
 - The local API applies request-size limits, schema migration, atomic JSON writes, and local security headers.
 - GitHub Pages calls the live Vercel API and falls back to demo state only when the hosted API is unavailable.
 
 ## Future Integrations
 
-- Real authentication, sessions, and account isolation
+- Supabase Auth-backed user accounts with private RLS beyond the current browser session isolation
 - Object storage for wardrobe photos and scan videos
 - Camera/body scan
 - Guided 360 body video capture for avatar generation and outfit sizing

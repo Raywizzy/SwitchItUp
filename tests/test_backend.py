@@ -240,6 +240,25 @@ class SupabaseStateStoreTests(unittest.TestCase):
         self.assertEqual(state["posts"][0]["id"], "post_0001")
         self.assertEqual(store.requests[-1]["method"], "POST")
 
+    def test_uploaded_photo_can_persist_without_local_file_path(self):
+        tiny_png = (
+            "data:image/png;base64,"
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII="
+        )
+        backend = SwitchItUpBackend(FakeSupabaseStore())
+
+        result = backend.add_wardrobe_item(
+            {
+                "name": "Hosted Upload Shirt",
+                "category": "top",
+                "photoName": "hosted-shirt.png",
+                "photoData": tiny_png,
+                "colors": ["#f8fafc", "#cbd5e1"],
+            }
+        )
+
+        self.assertTrue(result["item"]["photo"].startswith("data:image/png;base64,"))
+
 
 if __name__ == "__main__":
     unittest.main()

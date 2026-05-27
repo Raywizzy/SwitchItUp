@@ -99,6 +99,7 @@ Deployment files:
 - `api/index.py` reuses the local backend handler
 - `app.js` reads the optional `<meta name="switchitup-api-base">` value and automatically points GitHub Pages to `https://switchitup.vercel.app`
 - `server.py` uses local JSON by default and switches to Supabase persistence when `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are configured
+- Each browser gets a persistent `session_*` id in local storage; the API uses that header to isolate the user state row locally and in Supabase
 
 Supabase setup:
 
@@ -107,7 +108,7 @@ Supabase setup:
    - `SUPABASE_URL`
    - `SUPABASE_SERVICE_ROLE_KEY` for a production private backend key; this MVP can also run with the Supabase publishable/anon key plus the single-row RLS policies in `supabase/schema.sql`
    - optional `SWITCHITUP_SUPABASE_TABLE`, default `switchitup_state`
-   - optional `SWITCHITUP_STATE_ID`, default `production`
+   - optional `SWITCHITUP_STATE_ID`, default `production`, used when no valid `X-SwitchItUp-Session` header is present
 3. Redeploy Vercel.
 
 Until Supabase is configured, Vercel uses `/tmp` JSON state as a live MVP fallback.
@@ -115,11 +116,11 @@ Until Supabase is configured, Vercel uses `/tmp` JSON state as a live MVP fallba
 ## Backend Hardening
 
 - Atomic JSON writes with schema migration for newly added state keys
-- Supabase/Postgres JSONB state adapter for hosted persistence
+- Supabase/Postgres JSONB state adapter for hosted, per-browser session persistence
 - Request body size limit for upload-heavy JSON requests
 - Security headers for local API responses
 - Configurable data path, host, port, and CORS origin through environment variables
-- Upload validation for PNG, JPEG, and WebP data URLs, including size and file signature checks
+- Upload validation for PNG, JPEG, and WebP data URLs, including size and file signature checks; local mode writes files, hosted Supabase mode persists validated data URLs in the session state
 - Input validation for measurements, stylist plans, mall emails, competition prizes, and social actions
 - Unit coverage for wardrobe uploads, style requests, wishlist actions, social posts, messages, mall registration, competitions, follows, and measurement updates
 

@@ -6,6 +6,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
 import os
 from pathlib import Path
+import re
 from urllib.parse import urlparse
 
 from src.backend import BackendError, JsonStore, SupabaseStateStore, SwitchItUpBackend
@@ -14,9 +15,25 @@ from src.backend import BackendError, JsonStore, SupabaseStateStore, SwitchItUpB
 ROOT = Path(__file__).resolve().parent
 DATA_PATH = Path(os.environ.get("SWITCHITUP_DATA_PATH", ROOT / "data" / "app_state.json"))
 MAX_BODY_BYTES = 10 * 1024 * 1024
+DEFAULT_STATE_ID = os.environ.get("SWITCHITUP_STATE_ID", "production")
+SESSION_HEADER = "X-SwitchItUp-Session"
+SESSION_ID_RE = re.compile(r"^session_[a-z0-9]{16,64}$")
 
 
-def build_store() -> JsonStore | SupabaseStateStore:
+def resolve_state_id(headers) -> str:
+    session_id = str(headers.get(SESSION_HEADER, "")).strip().lower()
+    if SESSION_ID_RE.fullmatch(session_id):
+        return session_id
+    return DEFAULT_STATE_ID
+
+
+def session_data_path(record_id: str) -> Path:
+    if record_id == DEFAULT_STATE_ID:
+        return DATA_PATH
+    return DATA_PATH.with_name(f"{DATA_PATH.stem}-{record_id}{DATA_PATH.suffix}")
+
+
+def build_store(record_id: str = DEFAULT_STATE_ID) -> JsonStore | SupabaseStateStore:
     supabase_url = os.environ.get("SUPABASE_URL", "")
     supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
     if supabase_url and supabase_key:
@@ -24,12 +41,9 @@ def build_store() -> JsonStore | SupabaseStateStore:
             supabase_url,
             supabase_key,
             table=os.environ.get("SWITCHITUP_SUPABASE_TABLE", "switchitup_state"),
-            record_id=os.environ.get("SWITCHITUP_STATE_ID", "production"),
+            record_id=record_id,
         )
-    return JsonStore(DATA_PATH)
-
-
-backend = SwitchItUpBackend(build_store())
+    return JsonStore(session_data_path(record_id))
 
 
 class SwitchItUpHandler(SimpleHTTPRequestHandler):
@@ -39,7 +53,7 @@ class SwitchItUpHandler(SimpleHTTPRequestHandler):
     def end_headers(self) -> None:
         self.send_header("Access-Control-Allow-Origin", os.environ.get("SWITCHITUP_CORS_ORIGIN", "*"))
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        self.send_header("Access-Control-Allow-Headers", f"Content-Type, Authorization, {SESSION_HEADER}")
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Referrer-Policy", "no-referrer")
         super().end_headers()
@@ -54,7 +68,7 @@ class SwitchItUpHandler(SimpleHTTPRequestHandler):
             self._send_json({"ok": True, "service": "switchitup-api", "version": "0.3.0"})
             return
         if path == "/api/state":
-            self._send_json(backend.get_state())
+            self._send_json(self._backend().get_state())
             return
         super().do_GET()
 
@@ -70,6 +84,7 @@ class SwitchItUpHandler(SimpleHTTPRequestHandler):
     def do_POST(self) -> None:
         path = urlparse(self.path).path
         try:
+            backend = self._backend()
             payload = self._read_json()
             if path == "/api/profile/role":
                 self._send_json(backend.set_role(str(payload.get("role", ""))))
@@ -125,6 +140,9 @@ class SwitchItUpHandler(SimpleHTTPRequestHandler):
         if length == 0:
             return {}
         return json.loads(self.rfile.read(length).decode("utf-8"))
+
+    def _backend(self) -> SwitchItUpBackend:
+        return SwitchItUpBackend(build_store(resolve_state_id(self.headers)))
 
     def _send_json(self, payload: dict, status: int = 200) -> None:
         body = json.dumps(payload).encode("utf-8")
