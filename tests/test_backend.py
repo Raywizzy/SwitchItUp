@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from src.backend import BackendError, JsonStore, SwitchItUpBackend
+from src.backend import BackendError, JsonStore, SupabaseStateStore, SwitchItUpBackend
 
 
 class BackendTests(unittest.TestCase):
@@ -193,6 +193,52 @@ class BackendTests(unittest.TestCase):
         result = self.backend.follow_stylist({"stylistName": "Tami Looks", "action": "follow"})
 
         self.assertEqual(len(result["followers"]), 1)
+
+
+class FakeSupabaseStore(SupabaseStateStore):
+    def __init__(self, rows=None):
+        super().__init__("https://example.supabase.co", "service-role-token")
+        self.rows = rows or []
+        self.requests = []
+
+    def _request(self, method, path, payload=None, extra_headers=None):
+        self.requests.append(
+            {
+                "method": method,
+                "path": path,
+                "payload": payload,
+                "headers": extra_headers or {},
+            }
+        )
+        if method == "GET":
+            return self.rows
+        if method == "POST":
+            self.rows = [{"id": payload[0]["id"], "state": payload[0]["state"]}]
+            return self.rows
+        raise AssertionError(f"Unexpected method {method}")
+
+
+class SupabaseStateStoreTests(unittest.TestCase):
+    def test_load_seeds_default_state_when_remote_row_is_missing(self):
+        store = FakeSupabaseStore()
+
+        state = store.load()
+
+        self.assertEqual(state["profile"]["name"], "Raymond")
+        self.assertEqual(store.rows[0]["id"], "production")
+        self.assertEqual(store.requests[0]["method"], "GET")
+        self.assertEqual(store.requests[1]["method"], "POST")
+        self.assertIn("on_conflict=id", store.requests[1]["path"])
+
+    def test_load_migrates_remote_state_without_losing_existing_values(self):
+        store = FakeSupabaseStore(rows=[{"state": {"profile": {"role": "stylist"}, "posts": [{"caption": "Old"}]}}])
+
+        state = store.load()
+
+        self.assertEqual(state["profile"]["role"], "stylist")
+        self.assertEqual(state["profile"]["name"], "Raymond")
+        self.assertEqual(state["posts"][0]["id"], "post_0001")
+        self.assertEqual(store.requests[-1]["method"], "POST")
 
 
 if __name__ == "__main__":

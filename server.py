@@ -8,13 +8,28 @@ import os
 from pathlib import Path
 from urllib.parse import urlparse
 
-from src.backend import BackendError, JsonStore, SwitchItUpBackend
+from src.backend import BackendError, JsonStore, SupabaseStateStore, SwitchItUpBackend
 
 
 ROOT = Path(__file__).resolve().parent
 DATA_PATH = Path(os.environ.get("SWITCHITUP_DATA_PATH", ROOT / "data" / "app_state.json"))
 MAX_BODY_BYTES = 10 * 1024 * 1024
-backend = SwitchItUpBackend(JsonStore(DATA_PATH))
+
+
+def build_store() -> JsonStore | SupabaseStateStore:
+    supabase_url = os.environ.get("SUPABASE_URL", "")
+    supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
+    if supabase_url and supabase_key:
+        return SupabaseStateStore(
+            supabase_url,
+            supabase_key,
+            table=os.environ.get("SWITCHITUP_SUPABASE_TABLE", "switchitup_state"),
+            record_id=os.environ.get("SWITCHITUP_STATE_ID", "production"),
+        )
+    return JsonStore(DATA_PATH)
+
+
+backend = SwitchItUpBackend(build_store())
 
 
 class SwitchItUpHandler(SimpleHTTPRequestHandler):

@@ -96,14 +96,26 @@ https://switchitup.vercel.app
 Deployment files:
 
 - `vercel.json` routes `/api/*` to the Python serverless entrypoint in `api/index.py`
-- `api/index.py` reuses the local backend handler and stores runtime state in `/tmp` on Vercel
+- `api/index.py` reuses the local backend handler
 - `app.js` reads the optional `<meta name="switchitup-api-base">` value and automatically points GitHub Pages to `https://switchitup.vercel.app`
+- `server.py` uses local JSON by default and switches to Supabase persistence when `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are configured
 
-For a permanent multi-user production launch, replace the serverless `/tmp` state with a managed database and object storage.
+Supabase setup:
+
+1. Create the table with `supabase/schema.sql`.
+2. Set Vercel environment variables:
+   - `SUPABASE_URL`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - optional `SWITCHITUP_SUPABASE_TABLE`, default `switchitup_state`
+   - optional `SWITCHITUP_STATE_ID`, default `production`
+3. Redeploy Vercel.
+
+Until Supabase is configured, Vercel uses `/tmp` JSON state as a live MVP fallback.
 
 ## Backend Hardening
 
 - Atomic JSON writes with schema migration for newly added state keys
+- Supabase/Postgres JSONB state adapter for hosted persistence
 - Request body size limit for upload-heavy JSON requests
 - Security headers for local API responses
 - Configurable data path, host, port, and CORS origin through environment variables

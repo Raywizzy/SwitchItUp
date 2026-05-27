@@ -26,6 +26,7 @@ Manual checks:
 - Open Competition creates a persisted styling competition.
 - Refreshing after backend actions keeps saved JSON state.
 - GitHub Pages loads the hosted API instead of falling back to the static demo.
+- Supabase-backed state store seeds, migrates, and upserts state without network calls in unit tests.
 - Mobile layout remains usable.
 
 Backend unit coverage:
@@ -42,3 +43,4 @@ Backend unit coverage:
 - mall registration
 - competition creation and entry submission
 - stylist follow/unfollow behavior
+- Supabase state store fallback seeding and migration behavior

@@ -15,7 +15,9 @@ import json
 from pathlib import Path
 import re
 from threading import RLock
-from typing import Any
+from typing import Any, Protocol
+from urllib import error as url_error
+from urllib import parse, request
 from uuid import uuid4
 
 from src.style_engine import StyleRequest, WardrobeItem, build_style_plan, sample_stylists
@@ -43,6 +45,17 @@ class BackendError(ValueError):
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+
+
+class StateStore(Protocol):
+    def load(self) -> dict[str, Any]:
+        ...
+
+    def save(self, state: dict[str, Any]) -> None:
+        ...
+
+    def reset(self) -> dict[str, Any]:
+        ...
 
 
 def default_state() -> dict[str, Any]:
@@ -288,7 +301,7 @@ class JsonStore:
                 return state
             with self.path.open("r", encoding="utf-8") as handle:
                 state = json.load(handle)
-            migrated = self._merge_defaults(state)
+            migrated = merge_state_defaults(state)
             if migrated != state:
                 self.save(migrated)
             return migrated
@@ -307,25 +320,103 @@ class JsonStore:
         self.save(state)
         return state
 
-    def _merge_defaults(self, state: dict[str, Any]) -> dict[str, Any]:
-        merged = deepcopy(default_state())
-        self._deep_update(merged, state)
-        for index, post in enumerate(merged.get("posts", []), start=1):
-            post.setdefault("id", f"post_{index:04d}")
-        for index, competition in enumerate(merged.get("competitions", []), start=1):
-            competition.setdefault("id", f"competition_{index:04d}")
-        return merged
 
-    def _deep_update(self, base: dict[str, Any], override: dict[str, Any]) -> None:
-        for key, value in override.items():
-            if isinstance(value, dict) and isinstance(base.get(key), dict):
-                self._deep_update(base[key], value)
-            else:
-                base[key] = value
+class SupabaseStateStore:
+    """Persist the whole MVP state in a single Supabase/Postgres JSONB row."""
+
+    def __init__(self, url: str, key: str, table: str = "switchitup_state", record_id: str = "production") -> None:
+        if not url or not key:
+            raise BackendError("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required")
+        self.url = url.rstrip("/")
+        self.key = key
+        self.table = table
+        self.record_id = record_id
+        self._lock = RLock()
+
+    def load(self) -> dict[str, Any]:
+        with self._lock:
+            rows = self._request(
+                "GET",
+                f"/rest/v1/{parse.quote(self.table)}"
+                f"?id=eq.{parse.quote(self.record_id, safe='')}&select=state",
+            )
+            if not rows:
+                state = default_state()
+                self.save(state)
+                return state
+            state = rows[0].get("state") or {}
+            migrated = merge_state_defaults(state)
+            if migrated != state:
+                self.save(migrated)
+            return migrated
+
+    def save(self, state: dict[str, Any]) -> None:
+        with self._lock:
+            self._request(
+                "POST",
+                f"/rest/v1/{parse.quote(self.table)}?on_conflict=id",
+                [
+                    {
+                        "id": self.record_id,
+                        "state": state,
+                        "updated_at": utc_now(),
+                    }
+                ],
+                {"Prefer": "resolution=merge-duplicates,return=representation"},
+            )
+
+    def reset(self) -> dict[str, Any]:
+        state = default_state()
+        self.save(state)
+        return state
+
+    def _request(
+        self,
+        method: str,
+        path: str,
+        payload: Any | None = None,
+        extra_headers: dict[str, str] | None = None,
+    ) -> Any:
+        body = json.dumps(payload).encode("utf-8") if payload is not None else None
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "apikey": self.key,
+            "Authorization": f"Bearer {self.key}",
+            **(extra_headers or {}),
+        }
+        req = request.Request(f"{self.url}{path}", data=body, headers=headers, method=method)
+        try:
+            with request.urlopen(req, timeout=10) as response:
+                raw = response.read().decode("utf-8")
+        except url_error.HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="replace")
+            raise BackendError(f"Supabase request failed ({exc.code}): {detail[:240]}", status=502) from exc
+        except url_error.URLError as exc:
+            raise BackendError(f"Supabase request failed: {exc.reason}", status=502) from exc
+        return json.loads(raw) if raw else None
+
+
+def merge_state_defaults(state: dict[str, Any]) -> dict[str, Any]:
+    merged = deepcopy(default_state())
+    deep_update(merged, state)
+    for index, post in enumerate(merged.get("posts", []), start=1):
+        post.setdefault("id", f"post_{index:04d}")
+    for index, competition in enumerate(merged.get("competitions", []), start=1):
+        competition.setdefault("id", f"competition_{index:04d}")
+    return merged
+
+
+def deep_update(base: dict[str, Any], override: dict[str, Any]) -> None:
+    for key, value in override.items():
+        if isinstance(value, dict) and isinstance(base.get(key), dict):
+            deep_update(base[key], value)
+        else:
+            base[key] = value
 
 
 class SwitchItUpBackend:
-    def __init__(self, store: JsonStore) -> None:
+    def __init__(self, store: StateStore) -> None:
         self.store = store
 
     def get_state(self) -> dict[str, Any]:
