@@ -105,7 +105,7 @@ Supabase setup:
 1. Create the table with `supabase/schema.sql`.
 2. Set Vercel environment variables:
    - `SUPABASE_URL`
-   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY` for a production private backend key; this MVP can also run with the Supabase publishable/anon key plus the single-row RLS policies in `supabase/schema.sql`
    - optional `SWITCHITUP_SUPABASE_TABLE`, default `switchitup_state`
    - optional `SWITCHITUP_STATE_ID`, default `production`
 3. Redeploy Vercel.
