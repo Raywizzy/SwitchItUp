@@ -1,0 +1,324 @@
+{
+  "ok": true,
+  "started_at": "2026-05-28T15:00:33+00:00",
+  "finished_at": "2026-05-28T15:00:34+00:00",
+  "python": "3.12.13 (main, Mar  3 2026, 15:35:03) [Clang 21.1.4 ]",
+  "numpy": "2.3.5",
+  "platform": "macOS-26.5-arm64-arm-64bit",
+  "seed": 20260528,
+  "dataset": {
+    "name": "Fashion-MNIST",
+    "source_url": "https://raw.githubusercontent.com/zalandoresearch/fashion-mnist/master/data/fashion",
+    "license": "MIT",
+    "train_examples": 60000,
+    "eval_examples": 10000,
+    "labels": [
+      "T-shirt/top",
+      "Trouser",
+      "Pullover",
+      "Dress",
+      "Coat",
+      "Sandal",
+      "Shirt",
+      "Sneaker",
+      "Bag",
+      "Ankle boot"
+    ]
+  },
+  "training": {
+    "epochs": 15,
+    "batch_size": 256,
+    "learning_rate": 0.18,
+    "weight_decay": 0.0005
+  },
+  "model_output": "/Users/user/Downloads/SwitchItUp/models/switchai-fashion-mnist-softmax.npz",
+  "history": [
+    {
+      "epoch": 1,
+      "loss": 0.7697305712294071,
+      "train_accuracy": 0.7500833333333333,
+      "eval_accuracy": 0.7335
+    },
+    {
+      "epoch": 2,
+      "loss": 0.5522631347179413,
+      "train_accuracy": 0.8147166666666666,
+      "eval_accuracy": 0.8037
+    },
+    {
+      "epoch": 3,
+      "loss": 0.5130445736519834,
+      "train_accuracy": 0.8310666666666666,
+      "eval_accuracy": 0.8166
+    },
+    {
+      "epoch": 4,
+      "loss": 0.4959034824624975,
+      "train_accuracy": 0.8454666666666667,
+      "eval_accuracy": 0.8313
+    },
+    {
+      "epoch": 5,
+      "loss": 0.4815524808903958,
+      "train_accuracy": 0.8475166666666667,
+      "eval_accuracy": 0.8293
+    },
+    {
+      "epoch": 6,
+      "loss": 0.4700212487514983,
+      "train_accuracy": 0.8465833333333334,
+      "eval_accuracy": 0.8293
+    },
+    {
+      "epoch": 7,
+      "loss": 0.45965481933127056,
+      "train_accuracy": 0.8215166666666667,
+      "eval_accuracy": 0.8093
+    },
+    {
+      "epoch": 8,
+      "loss": 0.456503220568312,
+      "train_accuracy": 0.8468333333333333,
+      "eval_accuracy": 0.831
+    },
+    {
+      "epoch": 9,
+      "loss": 0.4523494551790522,
+      "train_accuracy": 0.83595,
+      "eval_accuracy": 0.8171
+    },
+    {
+      "epoch": 10,
+      "loss": 0.45073448736616906,
+      "train_accuracy": 0.828,
+      "eval_accuracy": 0.8106
+    },
+    {
+      "epoch": 11,
+      "loss": 0.4493882470942558,
+      "train_accuracy": 0.8462833333333334,
+      "eval_accuracy": 0.8315
+    },
+    {
+      "epoch": 12,
+      "loss": 0.4404660013127834,
+      "train_accuracy": 0.8544,
+      "eval_accuracy": 0.8356
+    },
+    {
+      "epoch": 13,
+      "loss": 0.43582684486470324,
+      "train_accuracy": 0.7869166666666667,
+      "eval_accuracy": 0.7671
+    },
+    {
+      "epoch": 14,
+      "loss": 0.4416728950561361,
+      "train_accuracy": 0.82525,
+      "eval_accuracy": 0.8038
+    },
+    {
+      "epoch": 15,
+      "loss": 0.4329592817641319,
+      "train_accuracy": 0.8585,
+      "eval_accuracy": 0.8414
+    }
+  ],
+  "metrics": {
+    "accuracy": 0.8414,
+    "correct": 8414,
+    "total": 10000,
+    "per_class": [
+      {
+        "label": "T-shirt/top",
+        "support": 1000,
+        "correct": 849,
+        "accuracy": 0.849
+      },
+      {
+        "label": "Trouser",
+        "support": 1000,
+        "correct": 958,
+        "accuracy": 0.958
+      },
+      {
+        "label": "Pullover",
+        "support": 1000,
+        "correct": 708,
+        "accuracy": 0.708
+      },
+      {
+        "label": "Dress",
+        "support": 1000,
+        "correct": 854,
+        "accuracy": 0.854
+      },
+      {
+        "label": "Coat",
+        "support": 1000,
+        "correct": 807,
+        "accuracy": 0.807
+      },
+      {
+        "label": "Sandal",
+        "support": 1000,
+        "correct": 906,
+        "accuracy": 0.906
+      },
+      {
+        "label": "Shirt",
+        "support": 1000,
+        "correct": 512,
+        "accuracy": 0.512
+      },
+      {
+        "label": "Sneaker",
+        "support": 1000,
+        "correct": 936,
+        "accuracy": 0.936
+      },
+      {
+        "label": "Bag",
+        "support": 1000,
+        "correct": 947,
+        "accuracy": 0.947
+      },
+      {
+        "label": "Ankle boot",
+        "support": 1000,
+        "correct": 937,
+        "accuracy": 0.937
+      }
+    ],
+    "confusion_matrix": [
+      [
+        849,
+        4,
+        13,
+        35,
+        8,
+        2,
+        75,
+        0,
+        14,
+        0
+      ],
+      [
+        5,
+        958,
+        3,
+        23,
+        6,
+        0,
+        3,
+        0,
+        2,
+        0
+      ],
+      [
+        27,
+        5,
+        708,
+        9,
+        169,
+        1,
+        71,
+        0,
+        10,
+        0
+      ],
+      [
+        41,
+        14,
+        15,
+        854,
+        37,
+        0,
+        35,
+        0,
+        4,
+        0
+      ],
+      [
+        0,
+        3,
+        89,
+        30,
+        807,
+        1,
+        63,
+        0,
+        7,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        2,
+        0,
+        906,
+        0,
+        58,
+        3,
+        31
+      ],
+      [
+        169,
+        3,
+        121,
+        27,
+        138,
+        1,
+        512,
+        0,
+        29,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        35,
+        0,
+        936,
+        0,
+        29
+      ],
+      [
+        3,
+        1,
+        8,
+        11,
+        3,
+        5,
+        17,
+        5,
+        947,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        12,
+        0,
+        50,
+        1,
+        937
+      ]
+    ]
+  },
+  "artifacts": {
+    "metrics_json": "/Users/user/Downloads/SwitchItUp/reports/training/fashion_mnist_softmax/metrics.json",
+    "history_csv": "/Users/user/Downloads/SwitchItUp/reports/training/fashion_mnist_softmax/history.csv",
+    "accuracy_by_class_csv": "/Users/user/Downloads/SwitchItUp/reports/training/fashion_mnist_softmax/accuracy_by_class.csv",
+    "confusion_matrix_csv": "/Users/user/Downloads/SwitchItUp/reports/training/fashion_mnist_softmax/confusion_matrix.csv",
+    "training_curve_svg": "/Users/user/Downloads/SwitchItUp/reports/training/fashion_mnist_softmax/training_curve.svg",
+    "accuracy_by_class_svg": "/Users/user/Downloads/SwitchItUp/reports/training/fashion_mnist_softmax/accuracy_by_class.svg"
+  }
+}

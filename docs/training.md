@@ -57,6 +57,20 @@ This writes:
 - `reports/training/fashion_mnist_baseline/accuracy_by_class.svg`
 - `reports/training/fashion_mnist_baseline/confusion_matrix.svg`
 
+Stronger local NumPy softmax model:
+
+```bash
+/Users/user/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 \
+  tools/train_fashion_mnist_softmax.py
+```
+
+This writes:
+
+- `models/switchai-fashion-mnist-softmax.npz`
+- `reports/training/fashion_mnist_softmax/metrics.json`
+- `reports/training/fashion_mnist_softmax/training_curve.svg`
+- `reports/training/fashion_mnist_softmax/accuracy_by_class.svg`
+
 Local Python in this workspace does not include `datasets`, `torch`,
 `transformers`, or `sklearn`. Use `uv run` so the script resolves dependencies:
 
@@ -90,7 +104,7 @@ missing file.
 
 ## Production Path
 
-1. Train a small Fashion-MNIST classifier to validate the ML pipeline.
+1. Train Fashion-MNIST centroid and softmax classifiers to validate the ML pipeline.
 2. Train Fashionpedia 4-category detector for garment vs shoe/accessory regions.
 3. Train Fashionpedia full detector/attribute model.
 4. Add Fashion200K image/text embeddings for style search.

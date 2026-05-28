@@ -92,6 +92,12 @@ Train a dependency-free real-data baseline and save metrics/graphs:
 python3 tools/train_fashion_mnist_baseline.py
 ```
 
+Continue training with a stronger NumPy softmax classifier:
+
+```bash
+/Users/user/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/train_fashion_mnist_softmax.py
+```
+
 See `docs/training.md`.
 
 ## API
