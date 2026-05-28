@@ -68,6 +68,21 @@
       "notes": "Image/text fashion data useful for color, style, material, and search ranking."
     },
     {
+      "id": "fashion_product_images_mit",
+      "name": "Fashion Product Images MIT",
+      "source": "huggingface",
+      "repo_id": "sngdmtdkw-02/fashion-product-images",
+      "url": "https://hf.co/datasets/sngdmtdkw-02/fashion-product-images",
+      "license": "mit",
+      "status": "approved",
+      "tasks": ["catalog_images", "visual_pretraining", "product_imagery"],
+      "rows": 9800,
+      "bytes": 86568866,
+      "default_config": "default",
+      "splits": ["train"],
+      "notes": "Small MIT-licensed imagefolder dataset; use for catalog image pretraining and visual QA, not supervised category training."
+    },
+    {
       "id": "garments2look",
       "name": "Garments2Look",
       "source": "huggingface",

@@ -1,0 +1,21 @@
+{
+  "execute": true,
+  "max_shards": 1,
+  "max_shard_bytes": 200000000,
+  "max_total_bytes": 200000000,
+  "planned_metadata_bytes": 86568866,
+  "plan": [
+    {
+      "id": "fashion_product_images_mit",
+      "repo_id": "sngdmtdkw-02/fashion-product-images",
+      "license": "mit",
+      "status": "approved",
+      "split": "train",
+      "filename": "0000.parquet",
+      "destination": "/Users/user/Downloads/SwitchItUp/datasets/raw/fashion_product_images_mit/default/train/0000.parquet",
+      "url": "https://huggingface.co/datasets/sngdmtdkw-02/fashion-product-images/resolve/refs%2Fconvert%2Fparquet/default/train/0000.parquet",
+      "metadata_bytes": 86568866,
+      "downloaded_bytes": 86568866
+    }
+  ]
+}

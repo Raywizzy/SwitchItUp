@@ -80,6 +80,13 @@ Download approved dataset shards:
 python3 tools/download_training_datasets.py --dataset fashion_mnist --max-shards 1 --execute
 ```
 
+Build the broader approved local corpus with capped downloads:
+
+```bash
+python3 tools/download_training_datasets.py --max-shards 20 --max-shard-bytes 200000000 --max-total-bytes 700000000 --execute --write reports/training/multi_dataset/download_execute.json
+python3 tools/report_training_corpus.py --write reports/training/multi_dataset/corpus_report.json
+```
+
 Train the first vision classifier with managed dependencies:
 
 ```bash

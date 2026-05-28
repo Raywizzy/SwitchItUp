@@ -1,0 +1,267 @@
+{
+  "ok": true,
+  "generated_at": "2026-05-28",
+  "datasets": [
+    {
+      "id": "fashion_mnist",
+      "repo_id": "zalando-datasets/fashion_mnist",
+      "status": "approved",
+      "license": "mit",
+      "tasks": [
+        "image_classification",
+        "category_bootstrap"
+      ],
+      "registry_rows": 70000,
+      "registry_bytes": 36106894,
+      "viewer_ok": true,
+      "splits": [
+        {
+          "config": "fashion_mnist",
+          "split": "train",
+          "rows": 60000,
+          "bytes": 30931277
+        },
+        {
+          "config": "fashion_mnist",
+          "split": "test",
+          "rows": 10000,
+          "bytes": 5175617
+        }
+      ],
+      "rows": 70000,
+      "bytes": 36106894,
+      "error": null
+    },
+    {
+      "id": "fashionpedia_4_categories",
+      "repo_id": "detection-datasets/fashionpedia_4_categories",
+      "status": "approved",
+      "license": "cc-by-4.0",
+      "tasks": [
+        "object_detection",
+        "category_detection"
+      ],
+      "registry_rows": 46780,
+      "registry_bytes": 3474899949,
+      "viewer_ok": true,
+      "splits": [
+        {
+          "config": "default",
+          "split": "train",
+          "rows": 42102,
+          "bytes": 3127268940
+        },
+        {
+          "config": "default",
+          "split": "test",
+          "rows": 2339,
+          "bytes": 172644982
+        },
+        {
+          "config": "default",
+          "split": "val",
+          "rows": 2339,
+          "bytes": 174986027
+        }
+      ],
+      "rows": 46780,
+      "bytes": 3474899949,
+      "error": null
+    },
+    {
+      "id": "fashionpedia_full",
+      "repo_id": "detection-datasets/fashionpedia",
+      "status": "approved",
+      "license": "cc-by-4.0",
+      "tasks": [
+        "object_detection",
+        "segmentation",
+        "fine_grained_attributes"
+      ],
+      "registry_rows": 46781,
+      "registry_bytes": 3478843264,
+      "viewer_ok": true,
+      "splits": [
+        {
+          "config": "default",
+          "split": "train",
+          "rows": 45623,
+          "bytes": 3393995426
+        },
+        {
+          "config": "default",
+          "split": "val",
+          "rows": 1158,
+          "bytes": 84847838
+        }
+      ],
+      "rows": 46781,
+      "bytes": 3478843264,
+      "error": null
+    },
+    {
+      "id": "fashion200k",
+      "repo_id": "Marqo/fashion200k",
+      "status": "approved",
+      "license": "apache-2.0",
+      "tasks": [
+        "image_text_retrieval",
+        "attribute_learning",
+        "style_search"
+      ],
+      "registry_rows": 201624,
+      "registry_bytes": 3466991670,
+      "viewer_ok": true,
+      "splits": [
+        {
+          "config": "default",
+          "split": "data",
+          "rows": 201624,
+          "bytes": 3466991670
+        }
+      ],
+      "rows": 201624,
+      "bytes": 3466991670,
+      "error": null
+    },
+    {
+      "id": "fashion_product_images_mit",
+      "repo_id": "sngdmtdkw-02/fashion-product-images",
+      "status": "approved",
+      "license": "mit",
+      "tasks": [
+        "catalog_images",
+        "visual_pretraining",
+        "product_imagery"
+      ],
+      "registry_rows": 9800,
+      "registry_bytes": 86568866,
+      "viewer_ok": true,
+      "splits": [
+        {
+          "config": "default",
+          "split": "train",
+          "rows": 9800,
+          "bytes": 86568866
+        }
+      ],
+      "rows": 9800,
+      "bytes": 86568866,
+      "error": null
+    },
+    {
+      "id": "garments2look",
+      "repo_id": "ArtmeScienceLab/Garments2Look",
+      "status": "approved",
+      "license": "apache-2.0",
+      "tasks": [
+        "virtual_try_on",
+        "outfit_composition",
+        "multi_reference_generation"
+      ],
+      "registry_rows": null,
+      "registry_bytes": null,
+      "viewer_ok": false,
+      "splits": [],
+      "rows": null,
+      "bytes": null,
+      "error": "HTTPError: HTTP Error 500: Internal Server Error"
+    },
+    {
+      "id": "garment_condition_spots",
+      "repo_id": "wargoninnovation/Garment_condition_spots",
+      "status": "approved",
+      "license": "cc-by-4.0",
+      "tasks": [
+        "condition_detection",
+        "quality_control"
+      ],
+      "registry_rows": 4777,
+      "registry_bytes": 567656,
+      "viewer_ok": true,
+      "splits": [
+        {
+          "config": "default",
+          "split": "train",
+          "rows": 4265,
+          "bytes": 506586
+        },
+        {
+          "config": "default",
+          "split": "validation",
+          "rows": 512,
+          "bytes": 61070
+        }
+      ],
+      "rows": 4777,
+      "bytes": 567656,
+      "error": null
+    },
+    {
+      "id": "garment_condition_holes",
+      "repo_id": "wargoninnovation/Garment_condition_holes",
+      "status": "approved",
+      "license": "cc-by-4.0",
+      "tasks": [
+        "condition_detection",
+        "quality_control"
+      ],
+      "registry_rows": 1497,
+      "registry_bytes": 215190,
+      "viewer_ok": true,
+      "splits": [
+        {
+          "config": "default",
+          "split": "train",
+          "rows": 1369,
+          "bytes": 196680
+        },
+        {
+          "config": "default",
+          "split": "validation",
+          "rows": 128,
+          "bytes": 18510
+        }
+      ],
+      "rows": 1497,
+      "bytes": 215190,
+      "error": null
+    },
+    {
+      "id": "garment_condition_jeans",
+      "repo_id": "wargoninnovation/Garment_condition_jeans",
+      "status": "approved",
+      "license": "cc-by-4.0",
+      "tasks": [
+        "condition_detection",
+        "quality_control"
+      ],
+      "registry_rows": 130,
+      "registry_bytes": 33621,
+      "viewer_ok": true,
+      "splits": [
+        {
+          "config": "default",
+          "split": "train",
+          "rows": 116,
+          "bytes": 29083
+        },
+        {
+          "config": "default",
+          "split": "validation",
+          "rows": 6,
+          "bytes": 1958
+        },
+        {
+          "config": "default",
+          "split": "test",
+          "rows": 8,
+          "bytes": 2580
+        }
+      ],
+      "rows": 130,
+      "bytes": 33621,
+      "error": null
+    }
+  ]
+}

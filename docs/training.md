@@ -42,6 +42,23 @@ python3 tools/download_training_datasets.py --dataset fashion_mnist --max-shards
 
 Downloaded data goes under `datasets/raw/`, which is ignored by git.
 
+Build the broader approved local corpus with caps:
+
+```bash
+python3 tools/download_training_datasets.py \
+  --max-shards 20 \
+  --max-shard-bytes 200000000 \
+  --max-total-bytes 700000000 \
+  --execute \
+  --write reports/training/multi_dataset/download_execute.json
+
+python3 tools/report_training_corpus.py \
+  --write reports/training/multi_dataset/corpus_report.json
+```
+
+The current multi-dataset corpus report is in
+`reports/training/multi_dataset/README.md`.
+
 ## Train Vision Classifier
 
 Dependency-free baseline using the real Fashion-MNIST IDX files:
