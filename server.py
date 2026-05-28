@@ -100,6 +100,10 @@ class SwitchItUpHandler(SimpleHTTPRequestHandler):
                 self._send_json(backend.complete_scan(int(payload.get("quality", 96))))
             elif path == "/api/style-requests":
                 self._send_json(backend.create_style_request(payload), status=201)
+            elif path == "/api/ai/style":
+                self._send_json(backend.generate_ai_style(payload), status=201)
+            elif path == "/api/ai/feedback":
+                self._send_json(backend.record_ai_feedback(payload))
             elif path == "/api/wishlist":
                 self._send_json(
                     backend.wishlist_action(str(payload.get("item", "")), str(payload.get("action", "")))

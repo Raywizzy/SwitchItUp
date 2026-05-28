@@ -21,6 +21,12 @@ from urllib import parse, request
 from uuid import uuid4
 
 from src.style_engine import StyleRequest, WardrobeItem, build_style_plan, sample_stylists
+from src.switch_ai import (
+    VALID_FEEDBACK_ACTIONS,
+    apply_switch_ai_feedback,
+    build_switch_ai_recommendation,
+    default_switch_ai_memory,
+)
 
 
 VALID_ROLES = {"normal", "stylist"}
@@ -262,6 +268,7 @@ def default_state() -> dict[str, Any]:
         "competitionEntries": [],
         "followers": [],
         "postComments": [],
+        "switchAi": default_switch_ai_memory(),
         "posts": [
             {
                 "id": "post_0001",
@@ -607,6 +614,70 @@ class SwitchItUpBackend:
             "confidence": plan.confidence_percent,
         }
 
+    def generate_ai_style(self, payload: dict[str, Any]) -> dict[str, Any]:
+        state = self.store.load()
+        switch_ai = state.setdefault("switchAi", default_switch_ai_memory())
+        request_payload = self._style_payload(payload)
+        try:
+            recommendation = build_switch_ai_recommendation(state, request_payload)
+        except ValueError as exc:
+            raise BackendError(str(exc)) from exc
+        recommendation.update(
+            {
+                "id": self._next_id(switch_ai["recommendations"], "switchai"),
+                "createdAt": utc_now(),
+                "applied": bool(payload.get("apply", True)),
+            }
+        )
+        switch_ai["recommendations"].insert(0, recommendation)
+        switch_ai["recommendations"] = switch_ai["recommendations"][:25]
+        if recommendation["applied"]:
+            state["selected"] = list(recommendation["outfitItems"])
+        self.store.save(state)
+        message = (
+            f"SwitchAI picked {', '.join(recommendation['outfitItems'])} "
+            f"with {recommendation['confidence']}% confidence."
+        )
+        return {
+            "message": message,
+            "recommendation": recommendation,
+            "switchAi": switch_ai,
+            "selected": state["selected"],
+        }
+
+    def record_ai_feedback(self, payload: dict[str, Any]) -> dict[str, Any]:
+        action = str(payload.get("action", ""))
+        if action not in VALID_FEEDBACK_ACTIONS:
+            raise BackendError("AI feedback action must be love, like, or dislike")
+        recommendation_id = self._text(payload.get("recommendationId", ""), "recommendationId", min_len=3, max_len=80)
+        note = str(payload.get("note", "")).strip()[:240]
+        state = self.store.load()
+        switch_ai = state.setdefault("switchAi", default_switch_ai_memory())
+        recommendation = next(
+            (entry for entry in switch_ai["recommendations"] if entry.get("id") == recommendation_id),
+            None,
+        )
+        if not recommendation:
+            raise BackendError(f"{recommendation_id} is not a saved SwitchAI recommendation", status=404)
+        feedback = {
+            "id": self._next_id(switch_ai["feedback"], "switchai_feedback"),
+            "createdAt": utc_now(),
+            "recommendationId": recommendation_id,
+            "action": action,
+            "note": note,
+            "outfitItems": list(recommendation.get("outfitItems", [])),
+        }
+        switch_ai["feedback"].insert(0, feedback)
+        switch_ai["feedback"] = switch_ai["feedback"][:100]
+        updated_memory = apply_switch_ai_feedback(switch_ai, state["wardrobe"], recommendation, action)
+        switch_ai["preferences"] = updated_memory["preferences"]
+        self.store.save(state)
+        return {
+            "message": f"SwitchAI learned from your {action} feedback.",
+            "feedback": feedback,
+            "switchAi": switch_ai,
+        }
+
     def create_post(self, payload: dict[str, Any]) -> dict[str, Any]:
         state = self.store.load()
         caption = self._text(payload.get("caption", ""), "caption", min_len=3, max_len=280)
@@ -789,6 +860,23 @@ class SwitchItUpBackend:
             "message": message,
             "event": event,
             "wardrobe": state["wardrobe"],
+        }
+
+    def _style_payload(self, payload: dict[str, Any]) -> dict[str, Any]:
+        occasion = self._text(payload.get("occasion", "Smart casual dinner"), "occasion", min_len=3, max_len=80)
+        budget = self._float_range(payload.get("budget", 0), "budget", 0, 10000)
+        replace_mode = str(payload.get("replaceMode", "some"))
+        if replace_mode not in VALID_REPLACE_MODES:
+            raise BackendError("replaceMode must be some, all, or none")
+        delivery = str(payload.get("delivery", "Within 24 hours"))
+        if delivery not in VALID_DELIVERIES:
+            raise BackendError("delivery option is invalid")
+        return {
+            "occasion": occasion,
+            "budget": budget,
+            "replaceMode": replace_mode,
+            "delivery": delivery,
+            "paidAllowed": bool(payload.get("paidAllowed", True)),
         }
 
     def _normalize_wardrobe_item(self, item: dict[str, Any]) -> dict[str, Any]:

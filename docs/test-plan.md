@@ -19,7 +19,9 @@ Manual checks:
 - Role toggle changes account mode.
 - Upgrade buttons create an active stylist application and switch the account to stylist mode.
 - Wardrobe Wear buttons update the virtual outfit.
-- Style Me generates a stylist request response.
+- Style Me runs SwitchAI and updates the virtual outfit.
+- SwitchAI panel shows confidence, outfit scores, reasons, stylist match, wishlist suggestions, and feedback state.
+- SwitchAI Love/Like/Dislike saves feedback and changes the learning count.
 - Mall wishlist button updates the request panel.
 - Add Photo adds a wardrobe item.
 - Post Fit creates a persisted social feed post.
@@ -37,6 +39,7 @@ Backend unit coverage:
 - browser session state id validation and local JSON isolation
 - outfit selection
 - scan capture
+- SwitchAI recommendation scoring and feedback learning
 - style request validation and plan persistence
 - wishlist accept/discard behavior
 - stylist upgrade application

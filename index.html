@@ -24,6 +24,7 @@
       <nav>
         <a class="active" href="#studio"><span class="nav-icon" aria-hidden="true">⌘</span>Studio</a>
         <a href="#wardrobe"><span class="nav-icon" aria-hidden="true">◌</span>Wardrobe</a>
+        <a href="#switchai"><span class="nav-icon" aria-hidden="true">✦</span>SwitchAI</a>
         <a href="#stylists"><span class="nav-icon" aria-hidden="true">◎</span>Stylists</a>
         <a href="#mall"><span class="nav-icon" aria-hidden="true">□</span>Mall</a>
         <a href="#social"><span class="nav-icon" aria-hidden="true">♡</span>Social</a>
@@ -243,6 +244,32 @@
       </section>
 
       <section class="lower-grid">
+        <section class="surface switch-ai" id="switchai">
+          <div class="surface-title">
+            <div>
+              <h2>SwitchAI stylist</h2>
+              <p>Personal outfit intelligence trained by your wardrobe and feedback</p>
+            </div>
+            <button id="runSwitchAi" type="button">Run SwitchAI</button>
+          </div>
+          <div class="switch-ai-body">
+            <div class="ai-score">
+              <span id="aiConfidence">Ready</span>
+              <strong id="aiModelName">SwitchAI v1.0</strong>
+              <small id="aiLearning">0 feedback signals</small>
+            </div>
+            <div id="aiRecommendation" class="ai-recommendation">
+              <strong>Generate a look</strong>
+              <p>SwitchAI will score your wardrobe, style your avatar, suggest a stylist, and learn from your feedback.</p>
+            </div>
+            <div class="ai-feedback" aria-label="SwitchAI feedback">
+              <button data-ai-feedback="love" type="button">Love</button>
+              <button data-ai-feedback="like" type="button">Like</button>
+              <button data-ai-feedback="dislike" type="button">Dislike</button>
+            </div>
+          </div>
+        </section>
+
         <section class="surface stylists" id="stylists">
           <div class="surface-title">
             <div>

@@ -118,6 +118,43 @@ class BackendTests(unittest.TestCase):
         with self.assertRaisesRegex(BackendError, "replaceMode"):
             self.backend.create_style_request({"occasion": "Dinner", "replaceMode": "mystery"})
 
+    def test_switch_ai_recommendation_persists_and_applies_outfit(self):
+        result = self.backend.generate_ai_style(
+            {
+                "occasion": "Smart casual dinner",
+                "budget": 120,
+                "replaceMode": "some",
+                "delivery": "Within 24 hours",
+                "paidAllowed": True,
+            }
+        )
+
+        state = self.backend.get_state()
+        self.assertEqual(len(state["switchAi"]["recommendations"]), 1)
+        self.assertEqual(state["selected"], result["recommendation"]["outfitItems"])
+        self.assertGreaterEqual(result["recommendation"]["confidence"], 70)
+        self.assertIn("SwitchAI picked", result["message"])
+
+    def test_switch_ai_feedback_updates_preferences(self):
+        recommendation = self.backend.generate_ai_style(
+            {
+                "occasion": "Smart casual dinner",
+                "budget": 120,
+                "replaceMode": "some",
+                "delivery": "Within 24 hours",
+                "paidAllowed": True,
+            }
+        )["recommendation"]
+
+        result = self.backend.record_ai_feedback(
+            {"recommendationId": recommendation["id"], "action": "love", "note": "This is my vibe."}
+        )
+
+        state = self.backend.get_state()
+        self.assertEqual(len(state["switchAi"]["feedback"]), 1)
+        self.assertIn("learned", result["message"])
+        self.assertTrue(any(score > 0 for score in state["switchAi"]["preferences"]["categories"].values()))
+
     def test_wishlist_accept_adds_item_to_wardrobe(self):
         result = self.backend.wishlist_action("Structured navy blazer", "accept")
         wardrobe_names = [item["name"] for item in result["wardrobe"]]

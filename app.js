@@ -31,6 +31,12 @@ const defaultState = {
   competitions: [
     { id: "competition_0001", name: "Weekend City Vibes", prize: 60, stylistsEntered: 8, winnersAllowed: 2, hoursLeft: 18 },
   ],
+  switchAi: {
+    version: "SwitchAI v1.0",
+    preferences: { colors: {}, categories: {}, materials: {}, formalityBias: 0 },
+    recommendations: [],
+    feedback: [],
+  },
 };
 
 let profile = structuredClone(defaultState.profile);
@@ -40,6 +46,7 @@ let stylists = structuredClone(defaultState.stylists);
 let mall = structuredClone(defaultState.mall);
 let posts = structuredClone(defaultState.posts);
 let competitions = structuredClone(defaultState.competitions);
+let switchAi = structuredClone(defaultState.switchAi);
 let activeCategory = "all";
 let backendOnline = false;
 let uploadedPhotoData = "";
@@ -121,6 +128,7 @@ function applyState(state) {
   mall = structuredClone(state.mall || defaultState.mall);
   posts = structuredClone(state.posts || defaultState.posts);
   competitions = structuredClone(state.competitions || defaultState.competitions);
+  switchAi = structuredClone(state.switchAi || defaultState.switchAi);
   syncProfileUi();
 }
 
@@ -330,6 +338,57 @@ function renderCompetitions() {
   document.getElementById("openCompetition").addEventListener("click", openCompetition);
 }
 
+function latestAiRecommendation() {
+  return switchAi?.recommendations?.[0] || null;
+}
+
+function renderSwitchAI() {
+  const latest = latestAiRecommendation();
+  const output = document.getElementById("aiRecommendation");
+  if (!output) return;
+  const feedbackCount = Number(switchAi?.feedback?.length || 0);
+  document.getElementById("aiLearning").textContent = `${feedbackCount} feedback signal${feedbackCount === 1 ? "" : "s"}`;
+  document.getElementById("aiModelName").textContent = switchAi?.version || latest?.model || "SwitchAI v1.0";
+
+  if (!latest) {
+    document.getElementById("aiConfidence").textContent = "Ready";
+    output.innerHTML = `
+      <strong>Generate a look</strong>
+      <p>SwitchAI will score your wardrobe, style your avatar, suggest a stylist, and learn from your feedback.</p>
+    `;
+    return;
+  }
+
+  const wishlist = latest.mallWishlist || [];
+  const scores = latest.fitScores || [];
+  const reasons = latest.reasons || [];
+  const learning = latest.learningSummary || {};
+  document.getElementById("aiConfidence").textContent = `${Number(latest.confidence || 0)}%`;
+  output.innerHTML = `
+    <div class="ai-fit">
+      <strong>${escapeHtml(latest.occasion || "Styled outfit")}</strong>
+      <p>${escapeHtml((latest.outfitItems || []).join(" + "))}</p>
+    </div>
+    <div class="ai-mini-grid">
+      ${scores.map((item) => `
+        <article>
+          <span>${escapeHtml(item.category)}</span>
+          <strong>${escapeHtml(item.name)}</strong>
+          <small>${Number(item.score || 0)} · ${escapeHtml(item.reason)}</small>
+        </article>
+      `).join("")}
+    </div>
+    <ul class="ai-reasons">
+      ${reasons.map((reason) => `<li>${escapeHtml(reason)}</li>`).join("")}
+    </ul>
+    <div class="ai-bottom-row">
+      <span>Stylist: ${escapeHtml(latest.stylistMatch?.name || "SwitchAI")}</span>
+      <span>Wishlist: ${wishlist.length ? wishlist.map((item) => escapeHtml(item.item)).join(", ") : "No replacement needed"}</span>
+      <span>Learning: ${(learning.favoriteColors || []).map(escapeHtml).join(", ") || "fresh profile"}</span>
+    </div>
+  `;
+}
+
 function markRequestSent(text) {
   document.getElementById("requestOutput").textContent = text;
   document.getElementById("requestStatus").textContent = "Sent to stylist";
@@ -440,6 +499,7 @@ function renderAll() {
   renderMall();
   renderSocial();
   renderCompetitions();
+  renderSwitchAI();
 }
 
 async function upgradeStylistAccount() {
@@ -491,6 +551,44 @@ async function openCompetition() {
   markRequestSent("Competition opened. Stylists can submit outfits for your prize pool.");
 }
 
+function currentStylePayload() {
+  return {
+    occasion: document.getElementById("occasion").value,
+    budget: Number(document.getElementById("budget").value),
+    replaceMode: document.getElementById("replaceMode").value,
+    delivery: document.getElementById("delivery").value,
+    paidAllowed: document.getElementById("paidToggle").checked,
+    apply: true,
+  };
+}
+
+async function runSwitchAI() {
+  const result = await callBackend("/api/ai/style", currentStylePayload());
+  if (!result) {
+    markRequestSent("SwitchAI needs the live backend. The static fallback can still style manually.");
+    return;
+  }
+  switchAi = result.switchAi || switchAi;
+  selected = result.selected || result.recommendation?.outfitItems || selected;
+  renderFit();
+  renderSwitchAI();
+  document.getElementById("confidence").textContent = `${Math.round(result.recommendation?.confidence || 0)}% SwitchAI confidence`;
+  markRequestSent(result.message);
+}
+
+async function sendSwitchAIFeedback(action) {
+  const latest = latestAiRecommendation();
+  if (!latest?.id) {
+    markRequestSent("Run SwitchAI first, then rate the recommendation.");
+    return;
+  }
+  const result = await callBackend("/api/ai/feedback", { recommendationId: latest.id, action });
+  if (!result) return;
+  switchAi = result.switchAi || switchAi;
+  renderSwitchAI();
+  markRequestSent(result.message);
+}
+
 document.querySelectorAll(".filter-row button").forEach((button) => {
   button.dataset.category = button.textContent.trim().toLowerCase().replace("tops", "top").replace("bottoms", "bottom").replace("shoes", "shoes");
   if (button.textContent.trim() === "All") button.dataset.category = "all";
@@ -525,11 +623,11 @@ document.getElementById("captureScan").addEventListener("click", async () => {
 
 document.getElementById("askStylist").addEventListener("click", sendRequest);
 document.getElementById("styleMe").addEventListener("click", async () => {
-  selected = ["White Oxford Shirt", "Stone Chinos", "White Trainers", "Navy Overshirt"].filter((name) =>
-    wardrobe.some((item) => item.name === name)
-  );
-  renderFit();
-  await sendRequest();
+  await runSwitchAI();
+});
+document.getElementById("runSwitchAi").addEventListener("click", runSwitchAI);
+document.querySelectorAll("[data-ai-feedback]").forEach((button) => {
+  button.addEventListener("click", () => sendSwitchAIFeedback(button.dataset.aiFeedback));
 });
 document.getElementById("addItem").addEventListener("click", openUploadPanel);
 document.getElementById("cancelUpload").addEventListener("click", closeUploadPanel);

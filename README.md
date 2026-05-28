@@ -22,6 +22,7 @@ The app idea:
 - Wardrobe photo-card simulation
 - Virtual-you outfit preview
 - Style request workflow
+- SwitchAI v1 local stylist brain with outfit scoring, explanations, mall suggestions, stylist matching, and feedback learning
 - Local JSON backend API with persistent profile, wardrobe, scan, role, style request, wishlist, stylist upgrade, social, messaging, mall registration, and competition state
 - Real wardrobe, mall, stylist, and social feed images stored in `assets/photos/`
 - Stylist marketplace cards
@@ -75,6 +76,8 @@ python3 -m unittest discover -s tests -v
 - `POST /api/outfit/select`
 - `POST /api/scan`
 - `POST /api/style-requests`
+- `POST /api/ai/style`
+- `POST /api/ai/feedback`
 - `POST /api/wishlist`
 - `POST /api/social/posts`
 - `POST /api/social/react`
@@ -117,12 +120,13 @@ Until Supabase is configured, Vercel uses `/tmp` JSON state as a live MVP fallba
 
 - Atomic JSON writes with schema migration for newly added state keys
 - Supabase/Postgres JSONB state adapter for hosted, per-browser session persistence
+- Session-scoped SwitchAI memory for recommendations, feedback, color/category/material preferences, and formality bias
 - Request body size limit for upload-heavy JSON requests
 - Security headers for local API responses
 - Configurable data path, host, port, and CORS origin through environment variables
 - Upload validation for PNG, JPEG, and WebP data URLs, including size and file signature checks; local mode writes files, hosted Supabase mode persists validated data URLs in the session state
 - Input validation for measurements, stylist plans, mall emails, competition prizes, and social actions
-- Unit coverage for wardrobe uploads, style requests, wishlist actions, social posts, messages, mall registration, competitions, follows, and measurement updates
+- Unit coverage for SwitchAI recommendations, feedback learning, wardrobe uploads, style requests, wishlist actions, social posts, messages, mall registration, competitions, follows, and measurement updates
 
 ## Image Credits
 
