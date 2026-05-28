@@ -10,3 +10,9 @@ reports/*.json
 data/app_state.json
 data/uploads/
 .vercel
+datasets/raw/
+datasets/processed/
+models/
+checkpoints/
+training-runs/
+submitted_jobs/

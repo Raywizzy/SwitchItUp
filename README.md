@@ -23,6 +23,7 @@ The app idea:
 - Virtual-you outfit preview
 - Style request workflow
 - SwitchAI v1 local stylist brain with outfit scoring, explanations, mall suggestions, stylist matching, and feedback learning
+- SwitchAI training registry and scripts for real fashion datasets
 - Local JSON backend API with persistent profile, wardrobe, scan, role, style request, wishlist, stylist upgrade, social, messaging, mall registration, and competition state
 - Real wardrobe, mall, stylist, and social feed images stored in `assets/photos/`
 - Stylist marketplace cards
@@ -64,6 +65,34 @@ http://127.0.0.1:5180
 ```bash
 python3 -m unittest discover -s tests -v
 ```
+
+## Train SwitchAI
+
+Dataset registry:
+
+```bash
+python3 tools/dataset_inventory.py --approved-only
+```
+
+Download approved dataset shards:
+
+```bash
+python3 tools/download_training_datasets.py --dataset fashion_mnist --max-shards 1 --execute
+```
+
+Train the first vision classifier with managed dependencies:
+
+```bash
+uv run tools/train_switch_ai_vision.py --dataset zalando-datasets/fashion_mnist --config fashion_mnist --max-train-samples 2000 --max-eval-samples 500 --epochs 1
+```
+
+Train a dependency-free real-data baseline and save metrics/graphs:
+
+```bash
+python3 tools/train_fashion_mnist_baseline.py
+```
+
+See `docs/training.md`.
 
 ## API
 

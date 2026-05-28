@@ -1,0 +1,11 @@
+label,support,correct,accuracy
+T-shirt/top,1000,685,0.685
+Trouser,1000,879,0.879
+Pullover,1000,450,0.45
+Dress,1000,767,0.767
+Coat,1000,562,0.562
+Sandal,1000,776,0.776
+Shirt,1000,217,0.217
+Sneaker,1000,820,0.82
+Bag,1000,744,0.744
+Ankle boot,1000,868,0.868

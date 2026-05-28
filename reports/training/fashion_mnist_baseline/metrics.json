@@ -1,0 +1,223 @@
+{
+  "ok": true,
+  "started_at": "2026-05-28T14:28:04+00:00",
+  "finished_at": "2026-05-28T14:28:10+00:00",
+  "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [Clang 17.0.0 (clang-1700.0.13.3)]",
+  "platform": "macOS-26.5-arm64-arm-64bit-Mach-O",
+  "dataset": {
+    "name": "Fashion-MNIST",
+    "source_url": "https://raw.githubusercontent.com/zalandoresearch/fashion-mnist/master/data/fashion",
+    "license": "MIT",
+    "train_examples": 60000,
+    "eval_examples": 10000,
+    "labels": [
+      "T-shirt/top",
+      "Trouser",
+      "Pullover",
+      "Dress",
+      "Coat",
+      "Sandal",
+      "Shirt",
+      "Sneaker",
+      "Bag",
+      "Ankle boot"
+    ]
+  },
+  "model_output": "/Users/user/Downloads/SwitchItUp/models/switchai-fashion-mnist-centroids.json",
+  "metrics": {
+    "accuracy": 0.6768,
+    "correct": 6768,
+    "total": 10000,
+    "per_class": [
+      {
+        "label": "T-shirt/top",
+        "support": 1000,
+        "correct": 685,
+        "accuracy": 0.685
+      },
+      {
+        "label": "Trouser",
+        "support": 1000,
+        "correct": 879,
+        "accuracy": 0.879
+      },
+      {
+        "label": "Pullover",
+        "support": 1000,
+        "correct": 450,
+        "accuracy": 0.45
+      },
+      {
+        "label": "Dress",
+        "support": 1000,
+        "correct": 767,
+        "accuracy": 0.767
+      },
+      {
+        "label": "Coat",
+        "support": 1000,
+        "correct": 562,
+        "accuracy": 0.562
+      },
+      {
+        "label": "Sandal",
+        "support": 1000,
+        "correct": 776,
+        "accuracy": 0.776
+      },
+      {
+        "label": "Shirt",
+        "support": 1000,
+        "correct": 217,
+        "accuracy": 0.217
+      },
+      {
+        "label": "Sneaker",
+        "support": 1000,
+        "correct": 820,
+        "accuracy": 0.82
+      },
+      {
+        "label": "Bag",
+        "support": 1000,
+        "correct": 744,
+        "accuracy": 0.744
+      },
+      {
+        "label": "Ankle boot",
+        "support": 1000,
+        "correct": 868,
+        "accuracy": 0.868
+      }
+    ],
+    "confusion_matrix": [
+      [
+        685,
+        6,
+        23,
+        102,
+        23,
+        106,
+        43,
+        1,
+        11,
+        0
+      ],
+      [
+        29,
+        879,
+        10,
+        52,
+        8,
+        12,
+        9,
+        0,
+        1,
+        0
+      ],
+      [
+        8,
+        1,
+        450,
+        8,
+        209,
+        115,
+        200,
+        0,
+        9,
+        0
+      ],
+      [
+        42,
+        11,
+        2,
+        767,
+        49,
+        76,
+        50,
+        0,
+        3,
+        0
+      ],
+      [
+        1,
+        3,
+        194,
+        72,
+        562,
+        60,
+        101,
+        0,
+        7,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        1,
+        0,
+        776,
+        2,
+        147,
+        3,
+        71
+      ],
+      [
+        197,
+        1,
+        117,
+        66,
+        219,
+        159,
+        217,
+        0,
+        24,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        111,
+        0,
+        820,
+        0,
+        69
+      ],
+      [
+        0,
+        2,
+        36,
+        44,
+        17,
+        97,
+        19,
+        39,
+        744,
+        2
+      ],
+      [
+        0,
+        0,
+        1,
+        2,
+        2,
+        50,
+        7,
+        69,
+        1,
+        868
+      ]
+    ]
+  },
+  "artifacts": {
+    "metrics_json": "/Users/user/Downloads/SwitchItUp/reports/training/fashion_mnist_baseline/metrics.json",
+    "accuracy_by_class_csv": "/Users/user/Downloads/SwitchItUp/reports/training/fashion_mnist_baseline/accuracy_by_class.csv",
+    "confusion_matrix_csv": "/Users/user/Downloads/SwitchItUp/reports/training/fashion_mnist_baseline/confusion_matrix.csv",
+    "accuracy_by_class_svg": "/Users/user/Downloads/SwitchItUp/reports/training/fashion_mnist_baseline/accuracy_by_class.svg",
+    "confusion_matrix_svg": "/Users/user/Downloads/SwitchItUp/reports/training/fashion_mnist_baseline/confusion_matrix.svg"
+  }
+}
